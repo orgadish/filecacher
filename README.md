@@ -47,6 +47,7 @@ something_that_takes_a_while <- function(x) {
 #   3. Perform some custom processing that takes a while (currently using sleep as an example).
 normal_pipeline <- function(files) {
     readr::read_csv(files) |>
+    suppressMessages() |>
     clean_names() |>
     something_that_takes_a_while()
 }
@@ -79,134 +80,32 @@ time_repeated_calls <- function(fn_call, iterations = 3) {
 }
 
 time_repeated_calls(\() normal_pipeline(iris_files_by_species))
-#> Rows: 150 Columns: 5
-#> ── Column specification ────────────────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): Species
-#> dbl (4): Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
-#> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-#> Rows: 150 Columns: 5
-#> ── Column specification ────────────────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): Species
-#> dbl (4): Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
-#> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 #> Warning: Some expressions had a GC in every iteration; so filtering is disabled.
-#> Rows: 150 Columns: 5
-#> ── Column specification ────────────────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): Species
-#> dbl (4): Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
-#> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-#> Rows: 150 Columns: 5
-#> ── Column specification ────────────────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): Species
-#> dbl (4): Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
-#> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
 #> Warning: Some expressions had a GC in every iteration; so filtering is disabled.
-#> Rows: 150 Columns: 5
-#> ── Column specification ────────────────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): Species
-#> dbl (4): Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
-#> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-#> Rows: 150 Columns: 5
-#> ── Column specification ────────────────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): Species
-#> dbl (4): Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
-#> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 #> # A tibble: 3 × 7
 #>   iteration expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <chr>     <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 1         pipeline      1.06s    1.06s     0.940    7.75MB    0.940
-#> 2 2         pipeline      1.05s    1.05s     0.954  185.83KB    0.954
-#> 3 3         pipeline      1.05s    1.05s     0.954  186.39KB    0
+#> 1 1         pipeline      1.05s    1.05s     0.950    7.76MB    0    
+#> 2 2         pipeline      1.06s    1.06s     0.947  185.83KB    0.947
+#> 3 3         pipeline      1.08s    1.08s     0.924  185.84KB    0.924
 time_repeated_calls(\() pipeline_with_cached_read(iris_files_by_species))
-#> Rows: 150 Columns: 5
-#> ── Column specification ────────────────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): Species
-#> dbl (4): Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
-#> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-#> Rows: 150 Columns: 5
-#> ── Column specification ────────────────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): Species
-#> dbl (4): Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
-#> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-#> Rows: 150 Columns: 5
-#> ── Column specification ────────────────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): Species
-#> dbl (4): Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
-#> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-#> Rows: 150 Columns: 5
-#> ── Column specification ────────────────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): Species
-#> dbl (4): Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
-#> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 #> Warning: Some expressions had a GC in every iteration; so filtering is disabled.
-#> Rows: 150 Columns: 5
-#> ── Column specification ────────────────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): Species
-#> dbl (4): Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
-#> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-#> Rows: 150 Columns: 5
-#> ── Column specification ────────────────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): Species
-#> dbl (4): Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
-#> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
 #> Warning: Some expressions had a GC in every iteration; so filtering is disabled.
 #> # A tibble: 3 × 7
 #>   iteration expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <chr>     <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 1         pipeline      1.11s    1.11s     0.903    17.4MB    0    
-#> 2 2         pipeline       1.1s     1.1s     0.910   364.2KB    0.910
-#> 3 3         pipeline      1.09s    1.09s     0.921   364.4KB    0.921
+#> 1 1         pipeline      1.15s    1.15s     0.873    17.4MB    0    
+#> 2 2         pipeline      1.13s    1.13s     0.886   364.2KB    0.886
+#> 3 3         pipeline      1.12s    1.12s     0.894   364.2KB    0.894
 time_repeated_calls(\() pipeline_with_use_caching(iris_files_by_species))
-#> Rows: 150 Columns: 5
-#> ── Column specification ────────────────────────────────────────────────────────
-#> Delimiter: ","
-#> chr (1): Species
-#> dbl (4): Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
-#> 
-#> ℹ Use `spec()` to retrieve the full column specification for this data.
-#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 #> # A tibble: 3 × 7
 #>   iteration expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <chr>     <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 1         pipeline     3.26ms   3.26ms      307.  217.38KB        0
-#> 2 2         pipeline     3.03ms   3.03ms      330.    9.28KB        0
-#> 3 3         pipeline     3.54ms   3.54ms      282.    9.28KB        0
+#> 1 1         pipeline     5.46ms   5.46ms      183.  217.38KB        0
+#> 2 2         pipeline     4.18ms   4.18ms      239.    9.28KB        0
+#> 3 3         pipeline     6.91ms   6.91ms      145.    9.28KB        0
 
 # Delete the temporary directory created to run these examples.
 fs::dir_delete(temp_dir)

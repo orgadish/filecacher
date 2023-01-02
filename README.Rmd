@@ -57,6 +57,7 @@ something_that_takes_a_while <- function(x) {
 #   3. Perform some custom processing that takes a while (currently using sleep as an example).
 normal_pipeline <- function(files) {
     readr::read_csv(files) |>
+    suppressMessages() |>
     clean_names() |>
     something_that_takes_a_while()
 }

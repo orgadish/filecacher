@@ -28,15 +28,13 @@ You can install the development version of `cachedread` like so:
 ``` r
 example_data_folder <- fs::path_package("extdata", package = "cachedread")
 
-iris_files_by_species <- example_data_folder |>
+IRIS_FILES_BY_SPECIES <- example_data_folder |>
   fs::dir_ls(glob = "*_only.csv")
 
 # Create a temporary directory to run these examples.
-temp_dir <- fs::path(example_data_folder, "temp")
-fs::dir_create(temp_dir)
+TEMP_DIR <- fs::path(example_data_folder, "temp")
+fs::dir_create(TEMP_DIR)
 
-# Use janitor::clean_names if it exists.
-clean_names <- if (requireNamespace("janitor", quietly = TRUE)) janitor::clean_names else \(x) x
 
 something_that_takes_a_while <- function(x) {
   Sys.sleep(0.5)
@@ -50,8 +48,9 @@ something_that_takes_a_while <- function(x) {
 normal_pipeline <- function(files) {
   readr::read_csv(files) |>
     suppressMessages() |>
-    clean_names() |>
+    janitor::clean_names() |>
     something_that_takes_a_while()
+
 }
 
 # Same pipeline, using `cached_read`:
@@ -61,8 +60,9 @@ pipeline_with_cached_read <- function(files) {
     read_fn = normal_pipeline, 
     label = "processed_data_cached_read",
     check = "exists",
-    cache_dir = temp_dir
+    cache_dir = TEMP_DIR
   )
+
 }
 
 # Alternate syntax, with `use_caching`
@@ -70,36 +70,53 @@ pipeline_with_use_caching <- function(files) {
   cachedread::use_caching(
     normal_pipeline(files), 
     label = "processed_data_use_caching",
-    cache_dir = temp_dir
+    cache_dir = TEMP_DIR
   )
+
 }
 
 # Time the pipelines when repeated 3 times:
-lapply(
-  1:3, 
-  \(x) bench::mark(
-    normal = normal_pipeline(iris_files_by_species),
-    cached_read = pipeline_with_cached_read(iris_files_by_species),
-    use_caching = pipeline_with_use_caching(iris_files_by_species),
-    iterations = 1, 
-    check = FALSE, 
-    filter_gc = FALSE
-  )
-) |>
-    dplyr::bind_rows(.id = "iteration")
-#> # A tibble: 9 × 7
-#>   iteration expression       min   median `itr/sec` mem_alloc `gc/sec`
-#>   <chr>     <bch:expr>  <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 1         normal      553.18ms 553.18ms      1.81    7.76MB      0  
-#> 2 1         cached_read  23.34ms  23.34ms     42.8    13.82MB     42.8
-#> 3 1         use_caching   3.76ms   3.76ms    266.    222.21KB      0  
-#> 4 2         normal      553.38ms 553.38ms      1.81  185.98KB      0  
-#> 5 2         cached_read   3.69ms   3.69ms    271.      9.28KB      0  
-#> 6 2         use_caching   3.54ms   3.54ms    283.      9.28KB      0  
-#> 7 3         normal      554.14ms 554.14ms      1.80  185.98KB      0  
-#> 8 3         cached_read   4.09ms   4.09ms    245.      9.28KB      0  
-#> 9 3         use_caching   3.98ms   3.98ms    251.      9.28KB      0
+system_time_elapsed_in_ms <- function(expr) {
+  elapsed <- system.time(expr)['elapsed']
+  elapsed_ms <- elapsed * 1000
+  elapsed_ms_formatted <- scales::label_number(1)(elapsed_ms) |>
+    paste("ms")
+  
+  return(elapsed_ms_formatted)
+}
+
+get_elapsed_time_for_pipelines <- function() {
+  tidyr::crossing(
+    iteration=1:3, 
+    tibble::tibble(
+      label = c("normal", "cached_read", "use_caching"),
+      pipeline_fn = list(normal_pipeline, pipeline_with_cached_read, pipeline_with_use_caching)
+    )
+  ) |>
+    dplyr::rowwise() |>
+    dplyr::mutate(
+      elapsed = system_time_elapsed_in_ms(pipeline_fn(IRIS_FILES_BY_SPECIES))
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::select(-pipeline_fn) |>
+    dplyr::arrange(label, iteration)
+}
+
+get_elapsed_time_for_pipelines()
+#> # A tibble: 9 × 3
+#>   iteration label       elapsed 
+#>       <int> <chr>       <chr>   
+#> 1         1 cached_read 1 206 ms
+#> 2         2 cached_read 19 ms   
+#> 3         3 cached_read 4 ms    
+#> 4         1 normal      562 ms  
+#> 5         2 normal      553 ms  
+#> 6         3 normal      550 ms  
+#> 7         1 use_caching 560 ms  
+#> 8         2 use_caching 5 ms    
+#> 9         3 use_caching 4 ms
 
 # Delete the temporary directory created to run these examples.
-fs::dir_delete(temp_dir)
+fs::dir_delete(TEMP_DIR)
+  
 ```

@@ -9,7 +9,7 @@ validate_check_arg(check)
 \arguments{
 \item{check}{Determines when to re-read from the original sources. This can be one of the following options:
 
-  1. (default) "file_info": Stores `fs::file_info(files)` and re-reads if there have been any changes.
+  1. (default) "file_info": Stores file metadata and re-reads if there have been any changes.
 
   2. "exists": Checks whether the cache file exists in the `cache_dir` with the indicated label.
 

@@ -1,6 +1,5 @@
 
 # Save the iris dataset as a single CSV and as CSVs per Species, for testing ----------------------------------------------------
-interactive()
 write_to_extdata <- function(tbl, label) {
   readr::write_csv(
     tbl,
@@ -11,9 +10,13 @@ write_to_extdata <- function(tbl, label) {
   )
 }
 
-iris |>
-  write_to_extdata("complete")
+create_example_data <- function() {
+  iris |>
+    write_to_extdata("complete")
 
-dplyr::group_split(iris_tbl, Species) |>
-  lapply(\(tbl) write_to_extdata(tbl, glue::glue("{unique(tbl$Species)}_only")))
+  dplyr::group_split(iris, Species) |>
+    lapply(\(tbl) write_to_extdata(tbl, glue::glue("{unique(tbl$Species)}_only")))
+}
+
+create_example_data()
 

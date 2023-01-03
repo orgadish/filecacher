@@ -38,7 +38,7 @@
 #'    If NULL (default), uses the common path among the inputs, as determined by `fs::path_common`.
 #' @param check Determines when to re-read from the original sources. This can be one of the following options:
 #'
-#'   1. (default) "file_info": Stores `fs::file_info(files)` and re-reads if there have been any changes.
+#'   1. (default) "file_info": Stores file metadata and re-reads if there have been any changes.
 #'
 #'   2. "exists": Checks whether the cache file exists in the `cache_dir` with the indicated label.
 #'
@@ -91,7 +91,7 @@ cached_read <- function(files,
   cache_file_ext <- cache_type_list$ext
 
   cache_file_path <- fs::path(cache_dir, label, ext = cache_file_ext)
-  file_info_path <- fs::path(cache_dir, label, ext = "cache_file_info")
+  file_info_path <- fs::path(cache_dir, label, ext = "cache_arrow_info")
 
   # If using `check='exists'`:
   if(check == "exists" && fs::file_exists(cache_file_path)) {
@@ -103,7 +103,7 @@ cached_read <- function(files,
 
   # If using `check='file_info'`:
   else if(check == "file_info" && fs::file_exists(cache_file_path) && fs::file_exists(file_info_path)) {
-    expected_file_info <- fs::file_info(files)
+    expected_file_info <- get_file_info(files)
     previous_file_info <- read_cache_fn(file_info_path)
     if(isTRUE(dplyr::all_equal(previous_file_info, expected_file_info, ignore_row_order = T))) {
       out <- read_cache_fn(cache_file_path)
@@ -121,7 +121,7 @@ cached_read <- function(files,
 
   # If `check='file_info'`, also save the file_info.
   if(check == "file_info") {
-    files_info <- fs::file_info(files)
+    files_info <- get_file_info(files)
     write_cache_fn(files_info, file_info_path)
   }
 
@@ -203,7 +203,28 @@ cached_read_csv <- function(files,
 }
 
 
-# Argument parsers -----------------------------------------------------------------
+# File Info Helper -------------------------------------------------------
+utils::globalVariables(".data")
+
+#' Get information from fs::file_info that is expected to stay the same if the contents aren't modified.
+#'
+#' @description For example, excludes access_time, which changes even if the contents are the same.
+#'
+#' @inheritParams fs::file_info
+get_file_info <- function(path) {
+  fs::file_info(path, follow=TRUE) |>
+
+    # Only keep headings from file_info expected to stay the same if the contents aren't modified.
+    dplyr::select(.data$path, .data$type, .data$size, .data$modification_time, .data$birth_time) |>
+
+    # Convert all columns to character to avoid issue with time zone parsing.
+    dplyr::mutate(
+      dplyr::across(.fns=as.character)
+    )
+}
+
+
+# Argument Parsing Helpers -----------------------------------------------------------------
 
 
 #' Validates the `check` argument for `cached_read`.

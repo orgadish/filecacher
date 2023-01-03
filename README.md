@@ -78,11 +78,8 @@ pipeline_with_use_caching <- function(files) {
 # Time the pipelines when repeated 3 times:
 system_time_elapsed_in_ms <- function(expr) {
   elapsed <- system.time(expr)['elapsed']
-  elapsed_ms <- elapsed * 1000
-  elapsed_ms_formatted <- scales::label_number(1)(elapsed_ms) |>
+  round(elapsed * 1000) |>
     paste("ms")
-  
-  return(elapsed_ms_formatted)
 }
 
 get_elapsed_time_for_pipelines <- function() {
@@ -104,16 +101,16 @@ get_elapsed_time_for_pipelines <- function() {
 
 get_elapsed_time_for_pipelines()
 #> # A tibble: 9 × 3
-#>   iteration label       elapsed 
-#>       <int> <chr>       <chr>   
-#> 1         1 cached_read 1 206 ms
-#> 2         2 cached_read 19 ms   
-#> 3         3 cached_read 4 ms    
-#> 4         1 normal      562 ms  
-#> 5         2 normal      553 ms  
-#> 6         3 normal      550 ms  
-#> 7         1 use_caching 560 ms  
-#> 8         2 use_caching 5 ms    
+#>   iteration label       elapsed
+#>       <int> <chr>       <chr>  
+#> 1         1 cached_read 1138 ms
+#> 2         2 cached_read 19 ms  
+#> 3         3 cached_read 5 ms   
+#> 4         1 normal      554 ms 
+#> 5         2 normal      557 ms 
+#> 6         3 normal      549 ms 
+#> 7         1 use_caching 559 ms 
+#> 8         2 use_caching 5 ms   
 #> 9         3 use_caching 4 ms
 
 # Delete the temporary directory created to run these examples.

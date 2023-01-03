@@ -86,11 +86,8 @@ pipeline_with_use_caching <- function(files) {
 # Time the pipelines when repeated 3 times:
 system_time_elapsed_in_ms <- function(expr) {
   elapsed <- system.time(expr)['elapsed']
-  elapsed_ms <- elapsed * 1000
-  elapsed_ms_formatted <- scales::label_number(1)(elapsed_ms) |>
+  round(elapsed * 1000) |>
     paste("ms")
-  
-  return(elapsed_ms_formatted)
 }
 
 get_elapsed_time_for_pipelines <- function() {

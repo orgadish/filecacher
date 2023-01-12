@@ -20,7 +20,8 @@ See examples below.
 You can install the development version of `cachedread` like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+# install.packages("devtools")
+devtools::install_github("orgadish/cachedread")
 ```
 
 ## Example
@@ -76,17 +77,17 @@ pipeline_with_use_caching <- function(files) {
 }
 
 # Time the pipelines when repeated 3 times:
-system_time_elapsed_in_ms <- function(expr) {
-  elapsed <- system.time(expr)['elapsed']
-  round(elapsed * 1000) |>
-    paste("ms")
-}
-
 get_elapsed_time_for_pipelines <- function() {
+  system_time_elapsed_in_ms <- function(expr) {
+    elapsed <- system.time(expr)['elapsed']
+    round(elapsed * 1000) |>
+      paste("ms")
+  }
+  
   tidyr::crossing(
     iteration=1:3, 
     tibble::tibble(
-      label = c("normal", "cached_read", "use_caching"),
+      label = c("normal", "cached_read", "use_caching") |> forcats::fct_inorder(),
       pipeline_fn = list(normal_pipeline, pipeline_with_cached_read, pipeline_with_use_caching)
     )
   ) |>
@@ -102,14 +103,14 @@ get_elapsed_time_for_pipelines <- function() {
 get_elapsed_time_for_pipelines()
 #> # A tibble: 9 × 3
 #>   iteration label       elapsed
-#>       <int> <chr>       <chr>  
-#> 1         1 cached_read 1138 ms
-#> 2         2 cached_read 19 ms  
-#> 3         3 cached_read 5 ms   
-#> 4         1 normal      554 ms 
-#> 5         2 normal      557 ms 
-#> 6         3 normal      549 ms 
-#> 7         1 use_caching 559 ms 
+#>       <int> <fct>       <chr>  
+#> 1         1 normal      938 ms 
+#> 2         2 normal      553 ms 
+#> 3         3 normal      548 ms 
+#> 4         1 cached_read 890 ms 
+#> 5         2 cached_read 21 ms  
+#> 6         3 cached_read 5 ms   
+#> 7         1 use_caching 543 ms 
 #> 8         2 use_caching 5 ms   
 #> 9         3 use_caching 4 ms
 

@@ -16,7 +16,8 @@ Imports:
     dplyr,
     fs,
     glue,
-    tibble
+    tibble,
+    tidyselect (>= 1.2.0)
 RoxygenNote: 7.2.1
 Suggests: 
     arrow,

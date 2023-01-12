@@ -204,7 +204,6 @@ cached_read_csv <- function(files,
 
 
 # File Info Helper -------------------------------------------------------
-utils::globalVariables(".data")
 
 #' Get information from fs::file_info that is expected to stay the same if the contents aren't modified.
 #'
@@ -215,7 +214,7 @@ get_file_info <- function(path) {
   fs::file_info(path, follow=TRUE) |>
 
     # Only keep headings from file_info expected to stay the same if the contents aren't modified.
-    dplyr::select(.data$path, .data$type, .data$size, .data$modification_time, .data$birth_time) |>
+    dplyr::select("path", "type", "size", "modification_time", "birth_time") |>
 
     # Convert all columns to character to avoid issue with time zone parsing.
     dplyr::mutate(

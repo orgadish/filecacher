@@ -35,13 +35,15 @@ devtools::install_github("orgadish/cachedread")
 ## Example
 
 ```{r example}
-example_data_folder <- fs::path_package("extdata", package = "cachedread")
+EXAMPLE_DATA_FOLDER <- fs::path_package("extdata", package = "cachedread")
 
-IRIS_FILES_BY_SPECIES <- example_data_folder |>
-  fs::dir_ls(glob = "*_only.csv")
+# Example files: iris table split by species into three files.
+IRIS_FILES_BY_SPECIES <- fs::dir_ls(EXAMPLE_DATA_FOLDER, glob = "*_only.csv")
+IRIS_FILES_BY_SPECIES |> fs::path_file()
+
 
 # Create a temporary directory to run these examples.
-TEMP_DIR <- fs::path(example_data_folder, "temp")
+TEMP_DIR <- fs::path(EXAMPLE_DATA_FOLDER, "temp")
 fs::dir_create(TEMP_DIR)
 
 
@@ -59,7 +61,6 @@ normal_pipeline <- function(files) {
     suppressMessages() |>
     janitor::clean_names() |>
     something_that_takes_a_while()
-
 }
 
 # Same pipeline, using `cached_read`:
@@ -71,7 +72,6 @@ pipeline_with_cached_read <- function(files) {
     check = "exists",
     cache_dir = TEMP_DIR
   )
-
 }
 
 # Alternate syntax, with `use_caching`
@@ -81,7 +81,6 @@ pipeline_with_use_caching <- function(files) {
     label = "processed_data_use_caching",
     cache_dir = TEMP_DIR
   )
-
 }
 
 # Time the pipelines when repeated 3 times:
@@ -92,12 +91,17 @@ get_elapsed_time_for_pipelines <- function() {
       paste("ms")
   }
   
-  tidyr::crossing(
-    iteration=1:3, 
-    tibble::tibble(
-      label = c("normal", "cached_read", "use_caching") |> forcats::fct_inorder(),
-      pipeline_fn = list(normal_pipeline, pipeline_with_cached_read, pipeline_with_use_caching)
-    )
+  tibble::tribble(
+    ~iteration, ~label, ~pipeline_fn,
+    1, "normal", normal_pipeline,
+    1, "cached_read", pipeline_with_cached_read,
+    1, "use_caching", pipeline_with_use_caching,
+    2, "normal", normal_pipeline,
+    2, "cached_read", pipeline_with_cached_read,
+    2, "use_caching", pipeline_with_use_caching,
+    3, "normal", normal_pipeline,
+    3, "cached_read", pipeline_with_cached_read,
+    3, "use_caching", pipeline_with_use_caching,
   ) |>
     dplyr::rowwise() |>
     dplyr::mutate(
@@ -105,7 +109,7 @@ get_elapsed_time_for_pipelines <- function() {
     ) |>
     dplyr::ungroup() |>
     dplyr::select(-pipeline_fn) |>
-    dplyr::arrange(label, iteration)
+    dplyr::arrange(factor(label, levels=c("normal", "cached_read", "use_caching")), iteration)
 }
 
 get_elapsed_time_for_pipelines()

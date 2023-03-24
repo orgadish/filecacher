@@ -12,11 +12,9 @@
 #'
 #'   1. Standard function object, e.g. `readr::read_csv`
 #'
-#'   2. An anonymous function, e.g. `\(files) readr::read_csv(files) |> janitor::clean_names()`
-#'
-#'  If non-standard parameters are desired, an anonymous function should be used, e.g.
-#'
-#'      `\(files) readr::read_csv(files, col_names = FALSE)`
+#'   2. An anonymous function,
+#'      e.g. `\(files) readr::read_csv(files, col_names = FALSE)` or
+#'            `\(files) readr::read_csv(files) |> janitor::clean_names()`
 #'
 #'  To use multiple files with a function that only takes a single file, use `lapply` or `purrr::map` and then `rbind` or `purr::list_rbind`, e.g.
 #'
@@ -31,7 +29,6 @@
 #'      "csv" (same as `readr::write_csv` and `readr::read_csv` if `readr` is installed; otherwise base R `utils::write.csv` and `utils::read.csv`)
 #'  2. (Default) NULL:
 #'      Uses `write_cache_fn` and `read_cache_fn` if provided. Otherwise, uses `"arrow"`, if installed, or `"csv"`.
-#' @param write_cache_fn,read_cache_fn Functions used to write and read the cache file. If this is provided, the `cache_type` must be NULL.
 #' @param label The label to give the cached file,
 #'  e.g. generating a file with the path 'data.fused_arrow'.
 #' @param cache_dir Path to the folder that will contain the cache file.
@@ -43,6 +40,9 @@
 #'   2. "exists": Checks whether the cache file exists in the `cache_dir` with the indicated label.
 #'
 #'   3. "force": Does not do any checking and simply re-builds the cache file.
+#' @param write_cache_fn,read_cache_fn Functions used to write and read the cache file. To use this option,
+#'  `cache_type` must be NULL, both functions must be provided, and `cache_ext` cannot be null..
+#' @param cache_ext The extension to use on the cache file if `write_cache_fn` and `read_cache_fn` are provided.
 #'
 #' @return A `tibble`. (Results are coerced to a tibble so that they are not dependent on the various read functions.)
 #' @export
@@ -67,15 +67,18 @@
 #'   readr::read_csv() |>
 #'   janitor::clean_names() |>
 #'   use_caching()
+#'
 #' }
 cached_read <- function(files,
                         read_fn,
                         cache_type = NULL,
-                        write_cache_fn = NULL,
-                        read_cache_fn = NULL,
                         label = "data",
                         cache_dir = NULL,
-                        check = "file_info") {
+                        check = "file_info",
+                        write_cache_fn = NULL,
+                        read_cache_fn = NULL,
+                        cache_ext = NULL
+                        ) {
   # `cache_dir` argument
   if (is.null(cache_dir)) {
     cache_dir <- fs::path_common(files)
@@ -85,7 +88,7 @@ cached_read <- function(files,
   validate_check_arg(check)
 
   # `cache_type`, `_cache_fn` arguments
-  cache_type_list <- get_cache_type_list(cache_type = cache_type, write_cache_fn = write_cache_fn, read_cache_fn = read_cache_fn)
+  cache_type_list <- get_cache_type_list(cache_type = cache_type, write_cache_fn = write_cache_fn, read_cache_fn = read_cache_fn, cache_ext = cache_ext)
   write_cache_fn <- cache_type_list$write
   read_cache_fn <- cache_type_list$read
   cache_file_ext <- cache_type_list$ext
@@ -179,7 +182,7 @@ use_caching <- function(expr,
 
 #' @rdname cached_read
 #'
-#' @param ... Arguments passed on to `readr::read_csv`.
+#' @param ... Arguments passed on to `readr::read_csv` (if installed) or `utils::read.csv`.
 #'
 #' @export
 cached_read_csv <- function(files,
@@ -190,9 +193,12 @@ cached_read_csv <- function(files,
                             cache_dir = NULL,
                             check = "file_info",
                             ...) {
+
+  read_fn <- if(requireNamespace("readr", quietly = TRUE)) readr::read_csv else utils::read.csv
+
   cached_read(
     files = files,
-    read_fn = \(f) readr::read_csv(f, ...),
+    read_fn = \(f) read_fn(f, ...),
     cache_type = cache_type,
     write_cache_fn = write_cache_fn,
     read_cache_fn = read_cache_fn,
@@ -239,24 +245,40 @@ validate_check_arg <- function(check) {
   }
 }
 
-#' Parses the `cache_type` and `_cache_fn` arguments for `cached_read` and returns a list containing:
+#' Validates the `cache_type` and `_cache_fn` arguments for `cached_read` and returns a list containing:
 #'  `write`: The write function.
 #'  `read`: The read function.
 #'  `ext`: The extension to use for the cache file.
 #'
 #' @inheritParams cached_read
-get_cache_type_list <- function(cache_type, write_cache_fn, read_cache_fn) {
-  write_fn_exists <- !is.null(write_cache_fn)
-  read_fn_exists <- !is.null(read_cache_fn)
-  if(write_fn_exists != read_fn_exists) stop("Must provide either both or neither of `write_cache_fn` and `read_cache_fn`.")
+get_cache_type_list <- function(cache_type, write_cache_fn, read_cache_fn, cache_ext) {
+
+  manual_params_exists <- sapply(list(write_cache_fn, read_cache_fn, cache_ext), Negate(is.null))
+  any_manual_param_exists <- any(manual_params_exists)
+  all_manual_params_exist <- any_manual_param_exists && all(manual_params_exists)
 
   cache_type_exists <- !is.null(cache_type)
-  if(cache_type_exists && write_fn_exists) stop("Must provide either `cache_type` or `_cache_fn` arguments, but not both.")
 
-  if(write_fn_exists) {
-    return(list(write=write_cache_fn, read=read_cache_fn, ext="cached"))
+  if(cache_type_exists && any_manual_param_exists) stop("Must provide either `cache_type` or the `_cache_fn` and `cache_ext` arguments, but not both.")
+
+  if(any_manual_param_exists && !all_manual_params_exist) stop("Must provide all of `write_cache_fn`, `read_cache_fn`, and `cache_ext` if not using `cache_type`.")
+
+  # Base case: parameters were passed directly.
+  if(all_manual_params_exist) {
+    return(list(write=write_cache_fn, read=read_cache_fn, ext=cache_ext))
   }
 
+  return(parse_cache_type(cache_type))
+}
+
+
+#' Parses the `cache_type` arguments for `cached_read` and returns a list containing:
+#'  `write`: The write function.
+#'  `read`: The read function.
+#'  `ext`: The extension to use for the cache file.
+#'
+#' @inheritParams cached_read
+parse_cache_type <- function(cache_type) {
 
   # Validate `cache_type`
   VALID_CACHE_TYPE_STR_VALUES <- c("arrow", "csv")
@@ -273,9 +295,9 @@ get_cache_type_list <- function(cache_type, write_cache_fn, read_cache_fn) {
   base_csv_cache_list <- list(write=utils::write.csv, read=utils::read.csv, ext="cache_csv")
 
   if(is.null(cache_type)) {
-    if(!is.null(arrow_cache_list)) return(arrow_cache_list)
-    else if(!is.null(readr_csv_cache_list)) return(readr_csv_cache_list)
-    else return(base_csv_cache_list)
+    for(lst in list(arrow_cache_list, readr_csv_cache_list, base_csv_cache_list)){
+      if(!is.null(lst)) return(lst)
+    }
   }
 
   else if(cache_type == "arrow") {

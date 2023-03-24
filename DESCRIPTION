@@ -1,7 +1,7 @@
 Package: cachedread
 Type: Package
 Title: Cached Read
-Version: 0.1.0
+Version: 0.1.1
 Author: Or Gadish
 Maintainer: Or Gadish <orgadish@gmail.com>
 Description: 
@@ -16,11 +16,12 @@ Imports:
     dplyr,
     fs,
     glue,
-    tibble,
-    tidyselect (>= 1.2.0)
+    tibble
 RoxygenNote: 7.2.1
 Suggests: 
     arrow,
     readr,
+    data.table,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)

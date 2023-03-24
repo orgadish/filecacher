@@ -2,19 +2,18 @@
 % Please edit documentation in R/cached_read.R
 \name{validate_check_arg}
 \alias{validate_check_arg}
-\title{Validates the `check` argument for `cached_read`.}
+\title{Validates the \code{check} argument for \code{cached_read}.}
 \usage{
 validate_check_arg(check)
 }
 \arguments{
 \item{check}{Determines when to re-read from the original sources. This can be one of the following options:
-
-  1. (default) "file_info": Stores file metadata and re-reads if there have been any changes.
-
-  2. "exists": Checks whether the cache file exists in the `cache_dir` with the indicated label.
-
-  3. "force": Does not do any checking and simply re-builds the cache file.}
+\enumerate{
+\item (default) "file_info": Stores file metadata and re-reads if there have been any changes.
+\item "exists": Checks whether the cache file exists in the \code{cache_dir} with the indicated label.
+\item "force": Does not do any checking and simply re-builds the cache file.
+}}
 }
 \description{
-Validates the `check` argument for `cached_read`.
+Validates the \code{check} argument for \code{cached_read}.
 }

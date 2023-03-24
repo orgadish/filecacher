@@ -2,29 +2,20 @@
 % Please edit documentation in R/cached_read.R
 \name{cached_read}
 \alias{cached_read}
-\alias{use_caching}
 \alias{cached_read_csv}
-\title{Read data and save into a local "cache" file for easier management and re-reading.}
+\alias{use_caching}
+\title{Read data and save to a local "cache" file.}
 \usage{
 cached_read(
   files,
   read_fn,
   cache_type = NULL,
-  write_cache_fn = NULL,
-  read_cache_fn = NULL,
   label = "data",
   cache_dir = NULL,
-  check = "file_info"
-)
-
-use_caching(
-  expr,
-  cache_type = NULL,
+  check = "file_info",
   write_cache_fn = NULL,
   read_cache_fn = NULL,
-  label = "data",
-  cache_dir = NULL,
-  check = "exists"
+  cache_ext = NULL
 )
 
 cached_read_csv(
@@ -37,62 +28,126 @@ cached_read_csv(
   check = "file_info",
   ...
 )
+
+use_caching(
+  expr,
+  cache_type = NULL,
+  label = "data",
+  cache_dir = NULL,
+  check = "exists",
+  write_cache_fn = NULL,
+  read_cache_fn = NULL,
+  cache_ext = NULL
+)
 }
 \arguments{
-\item{files}{A vector of path(s) to file(s). This will be passed as the first argument to `read_fn`.}
+\item{files}{A vector of path(s) to file(s). This will be passed as the first argument to \code{read_fn}.}
 
-\item{read_fn}{A function that can read `files` into a data frame.
+\item{read_fn}{A function that can read \code{files} into a data frame.
 This can be one of three options:
+\enumerate{
+\item Standard function object, e.g. \code{readr::read_csv}
+\item An anonymous function that takes \code{files}, e.g.
+\itemize{
+\item \verb{\\(files) readr::read_csv(files, skip = 2) |> janitor::clean_names()}
+}
+}
 
-  1. Standard function object, e.g. `readr::read_csv`
+To use multiple files with a function that only takes a single file, use \code{lapply} and \code{dplyr::bind_rows} or \code{purrr::map} and \code{purr::list_rbind}, e.g.
 
-  2. An anonymous function, e.g. `\(files) readr::read_csv(files) |> janitor::clean_names()`
-
- If non-standard parameters are desired, an anonymous function should be used, e.g.
-
-     `\(files) readr::read_csv(files, col_names = FALSE)`
-
- To use multiple files with a function that only takes a single file, use `lapply` or `purrr::map` and then `rbind` or `purr::list_rbind`, e.g.
-
-     `\(files) lapply(files, data.table::fread) |> rbind()`
-     `\(files) purrr::map(files, data.table::fread) |> purrr::list_rbind()`}
+\if{html}{\out{<div class="sourceCode">}}\preformatted{ \\(files) lapply(files, data.table::fread) |> dplyr::bind_rows()
+ \\(files) purrr::map(files, data.table::fread) |> purrr::list_rbind()
+}\if{html}{\out{</div>}}}
 
 \item{cache_type}{The type of file to use for caching.
 This can be one of two options:
-
- 1. One of the following strings:
-     "arrow" (same as `write_cache_fn=arrow::write_feather` and `read_cache_fn=arrow::read_feather`),
-     "csv" (same as `readr::write_csv` and `readr::read_csv` if `readr` is installed; otherwise base R `utils::write.csv` and `utils::read.csv`)
- 2. (Default) NULL:
-     Uses `write_cache_fn` and `read_cache_fn` if provided. Otherwise, uses `"arrow"`, if installed, or `"csv"`.}
-
-\item{write_cache_fn, read_cache_fn}{Functions used to write and read the cache file. If this is provided, the `cache_type` must be NULL.}
+\enumerate{
+\item One of the following strings:
+\itemize{
+\item "arrow" to use \verb{arrow::<read|write>_feather},
+\item "data.table" to use \verb{data.table::f<read|write>},
+\item "csv" to use the first available of \verb{arrow::<read|write>_csv}, \code{readr}, \code{data.table}, or base R \code{utils}.
+}
+\item NULL:
+\itemize{
+\item (Default) Uses "arrow" if installed, otherwise "csv".
+\item Uses \code{write_cache_fn}, \code{read_cache_fn}, and \code{cache_ext} if provided.
+}
+}}
 
 \item{label}{The label to give the cached file,
 e.g. generating a file with the path 'data.fused_arrow'.}
 
 \item{cache_dir}{Path to the folder that will contain the cache file.
-If NULL (default), uses the common path among the inputs, as determined by `fs::path_common`.}
+If NULL (default), uses the common path among the inputs, as determined by \code{fs::path_common}.}
 
 \item{check}{Determines when to re-read from the original sources. This can be one of the following options:
+\enumerate{
+\item (default) "file_info": Stores file metadata and re-reads if there have been any changes.
+\item "exists": Checks whether the cache file exists in the \code{cache_dir} with the indicated label.
+\item "force": Does not do any checking and simply re-builds the cache file.
+}}
 
-  1. (default) "file_info": Stores file metadata and re-reads if there have been any changes.
+\item{write_cache_fn, read_cache_fn}{Functions used to write and read the cache file. To use this option,
+\code{cache_type} must be NULL, both functions must be provided, and \code{cache_ext} cannot be null..}
 
-  2. "exists": Checks whether the cache file exists in the `cache_dir` with the indicated label.
+\item{cache_ext}{The extension to use on the cache file if \code{write_cache_fn} and \code{read_cache_fn} are provided.}
 
-  3. "force": Does not do any checking and simply re-builds the cache file.}
+\item{...}{Arguments passed on to \code{readr::read_csv} (if installed) or \code{utils::read.csv}.}
 
 \item{expr}{Expression that generates a tibble, typically reading from files.}
-
-\item{...}{Arguments passed on to `readr::read_csv`.}
 }
 \value{
-A `tibble`. (Results are coerced to a tibble so that they are not dependent on the various read functions.)
+A \code{tibble}. Results are coerced to a tibble regardless of read_fn or cache_type to ensure uniformity and predictability of output type.
 }
 \description{
+Read data and save to a local "cache" file for easier management and re-reading.
+
 If no cache file already exists, performs the desired read operation and writes the results to a cache file. Optionally, also saves a cache file containing the latest file update info.
 If the cache file exists, it is read instead. By default it also tracks for file updating so that the file(s) are
- re-read from scratch if they have changed.
+re-read from scratch if they have changed.
+
+The type of cache file used depends on the \code{cache_type} parameter and the packages installed.
+We recommend installing the \code{arrow} package, which allows use writing and reading into an Arrow IPC format.
+}
+\details{
+\subsection{\code{cached_read}}{
+
+This the most flexible version. By default (\code{check = "file_info"}), it checks whether
+the original files have been modified (using \code{fs::file_info}) and therefore whether the results should be
+re-read from the original files or from the cache file.
+
+When reading from a slow file system, even getting the file information can be slow; in this case, we
+recommend \code{check = "exists"} to only check whether the cache exists.
+
+e.g.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{cached_read(some_files, arrow::read_feather)
+}\if{html}{\out{</div>}}
+
+to read from a set of arrow feather files.
+}
+
+\subsection{\code{cached_read_csv}}{
+
+This is like \code{cached_read} but uses the first read csv function available between \code{arrow},
+\code{readr}, \code{data.table}, or base R \code{utils}.
+}
+
+\subsection{\code{use_caching}}{
+
+Unlike \code{cached_read}, this can be piped at the end of an existing data pipeline, making it easy
+to integrate temporarily, if desired. However, because it does not have direct access to the file
+list, it cannot use \code{check = "file_info"}.
+
+e.g.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{readr::read_csv(some_files) |>
+  janitor::clean_names() |>
+  dplyr::summarize(...) |>
+  use_caching()
+}\if{html}{\out{</div>}}
+}
 }
 \examples{
 \dontrun{
@@ -114,5 +169,6 @@ res <- some_files |>
   readr::read_csv() |>
   janitor::clean_names() |>
   use_caching()
+
 }
 }

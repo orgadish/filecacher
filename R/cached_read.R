@@ -1,34 +1,75 @@
-#' Read data and save into a local "cache" file for easier management and re-reading.
+#' Read data and save to a local "cache" file.
 #'
 #' @description
+#' Read data and save to a local "cache" file for easier management and re-reading.
+#'
 #' If no cache file already exists, performs the desired read operation and writes the results to a cache file. Optionally, also saves a cache file containing the latest file update info.
 #' If the cache file exists, it is read instead. By default it also tracks for file updating so that the file(s) are
 #'  re-read from scratch if they have changed.
 #'
+#' The type of cache file used depends on the `cache_type` parameter and the packages installed.
+#' We recommend installing the `arrow` package, which allows use writing and reading into an Arrow IPC format.
+#'
+#' @details
+#'
+#' ## `cached_read`
+#'
+#' This the most flexible version. By default (`check = "file_info"`), it checks whether
+#' the original files have been modified (using `fs::file_info`) and therefore whether the results should be
+#' re-read from the original files or from the cache file.
+#'
+#' When reading from a slow file system, even getting the file information can be slow; in this case, we
+#' recommend `check = "exists"` to only check whether the cache exists.
+#'
+#' e.g.
+#'
+#'     cached_read(some_files, arrow::read_feather)
+#'
+#' to read from a set of arrow feather files.
+#'
+#'
+#' ## `cached_read_csv`
+#'
+#' This is like `cached_read` but uses the first read csv function available between `arrow`,
+#' `readr`, `data.table`, or base R `utils`.
+#'
+#' ## `use_caching`
+#'
+#' Unlike `cached_read`, this can be piped at the end of an existing data pipeline, making it easy
+#' to integrate temporarily, if desired. However, because it does not have direct access to the file
+#' list, it cannot use `check = "file_info"`.
+#'
+#' e.g.
+#'
+#'     readr::read_csv(some_files) |>
+#'       janitor::clean_names() |>
+#'       dplyr::summarize(...) |>
+#'       use_caching()
 #'
 #' @param files A vector of path(s) to file(s). This will be passed as the first argument to `read_fn`.
 #' @param read_fn A function that can read `files` into a data frame.
 #' This can be one of three options:
 #'
-#'   1. Standard function object, e.g. `readr::read_csv`
+#'  1. Standard function object, e.g. `readr::read_csv`
 #'
-#'   2. An anonymous function,
-#'      e.g. `\(files) readr::read_csv(files, col_names = FALSE)` or
-#'            `\(files) readr::read_csv(files) |> janitor::clean_names()`
+#'  2. An anonymous function that takes `files`, e.g.
+#'      - `\(files) readr::read_csv(files, skip = 2) |> janitor::clean_names()`
 #'
-#'  To use multiple files with a function that only takes a single file, use `lapply` or `purrr::map` and then `rbind` or `purr::list_rbind`, e.g.
+#'  To use multiple files with a function that only takes a single file, use `lapply` and `dplyr::bind_rows` or `purrr::map` and `purr::list_rbind`, e.g.
 #'
-#'      `\(files) lapply(files, data.table::fread) |> rbind()`
-#'      `\(files) purrr::map(files, data.table::fread) |> purrr::list_rbind()`
+#'      \(files) lapply(files, data.table::fread) |> dplyr::bind_rows()
+#'      \(files) purrr::map(files, data.table::fread) |> purrr::list_rbind()
 #'
 #' @param cache_type The type of file to use for caching.
 #' This can be one of two options:
 #'
 #'  1. One of the following strings:
-#'      "arrow" (same as `write_cache_fn=arrow::write_feather` and `read_cache_fn=arrow::read_feather`),
-#'      "csv" (same as `readr::write_csv` and `readr::read_csv` if `readr` is installed; otherwise base R `utils::write.csv` and `utils::read.csv`)
-#'  2. (Default) NULL:
-#'      Uses `write_cache_fn` and `read_cache_fn` if provided. Otherwise, uses `"arrow"`, if installed, or `"csv"`.
+#'      - "arrow" to use `arrow::<read|write>_feather`,
+#'      - "data.table" to use `data.table::f<read|write>`,
+#'      - "csv" to use the first available of `arrow::<read|write>_csv`, `readr`, `data.table`, or base R `utils`.
+#'  2. NULL:
+#'      - (Default) Uses "arrow" if installed, otherwise "csv".
+#'      - Uses `write_cache_fn`, `read_cache_fn`, and `cache_ext` if provided.
 #' @param label The label to give the cached file,
 #'  e.g. generating a file with the path 'data.fused_arrow'.
 #' @param cache_dir Path to the folder that will contain the cache file.
@@ -44,7 +85,7 @@
 #'  `cache_type` must be NULL, both functions must be provided, and `cache_ext` cannot be null..
 #' @param cache_ext The extension to use on the cache file if `write_cache_fn` and `read_cache_fn` are provided.
 #'
-#' @return A `tibble`. (Results are coerced to a tibble so that they are not dependent on the various read functions.)
+#' @return A `tibble`. Results are coerced to a tibble regardless of read_fn or cache_type to ensure uniformity and predictability of output type.
 #' @export
 #'
 #' @examples
@@ -94,7 +135,7 @@ cached_read <- function(files,
   cache_file_ext <- cache_type_list$ext
 
   cache_file_path <- fs::path(cache_dir, label, ext = cache_file_ext)
-  file_info_path <- fs::path(cache_dir, label, ext = "cache_arrow_info")
+  file_info_path <- fs::path(cache_dir, label, ext = paste0(cache_file_ext, "_info"))
 
   # If using `check='exists'`:
   if(check == "exists" && fs::file_exists(cache_file_path)) {
@@ -108,7 +149,7 @@ cached_read <- function(files,
   else if(check == "file_info" && fs::file_exists(cache_file_path) && fs::file_exists(file_info_path)) {
     expected_file_info <- get_file_info(files)
     previous_file_info <- read_cache_fn(file_info_path)
-    if(isTRUE(dplyr::all_equal(previous_file_info, expected_file_info, ignore_row_order = T))) {
+    if(dfs_equal(previous_file_info, expected_file_info)) {
       out <- read_cache_fn(cache_file_path)
 
       # Coerce to tibble and return.
@@ -133,6 +174,51 @@ cached_read <- function(files,
 
 }
 
+
+#' @rdname cached_read
+#'
+#' @param ... Arguments passed on to `readr::read_csv` (if installed) or `utils::read.csv`.
+#'
+#' @export
+cached_read_csv <- function(files,
+                            cache_type = NULL,
+                            write_cache_fn = NULL,
+                            read_cache_fn = NULL,
+                            label = "data",
+                            cache_dir = NULL,
+                            check = "file_info",
+                            ...) {
+  with_ellipsis <- function(fn, ...) {
+    \(fs) fn(fs, ...)
+  }
+
+  vectorize_on_files <- function(unvectorized_fn, ...) {
+    \(fs) lapply(fs, unvectorized_fn, ...) |> dplyr::bind_rows()
+  }
+
+  if(requireNamespace("arrow", quietly = TRUE)) {
+    read_fn <- vectorize_on_files(arrow::read_csv_arrow, ...)
+  } else if(requireNamespace("readr", quietly = TRUE)) {
+    read_fn <- with_ellipsis(readr::read_csv, ...)
+  } else if(requireNamespace("data.table", quietly = TRUE)) {
+    read_fn <- vectorize_on_files(data.table::fread, ...)
+  } else {
+    read_fn <- vectorize_on_files(utils::read.csv, ...)
+  }
+
+  cached_read(
+    files = files,
+    read_fn = read_fn,
+    cache_type = cache_type,
+    write_cache_fn = write_cache_fn,
+    read_cache_fn = read_cache_fn,
+    label = label,
+    cache_dir = cache_dir,
+    check = check
+  )
+}
+
+
 #' @rdname cached_read
 #'
 #' @param expr Expression that generates a tibble, typically reading from files.
@@ -140,20 +226,22 @@ cached_read <- function(files,
 #' @export
 use_caching <- function(expr,
                         cache_type = NULL,
-                        write_cache_fn = NULL,
-                        read_cache_fn = NULL,
                         label = "data",
                         cache_dir = NULL,
-                        check = "exists") {
+                        check = "exists",
+                        write_cache_fn = NULL,
+                        read_cache_fn = NULL,
+                        cache_ext = NULL
+                        ) {
   # `cache_dir` argument
-  if(is.null(cache_dir)) stop("`use_cached_read` cannot have `cache_dir=NULL`.")
+  if(is.null(cache_dir)) stop("`use_caching` cannot have `cache_dir=NULL`.")
 
   # `check` argument
   validate_check_arg(check)
-  if(check == "file_info") stop("`use_cached_read` can only be used with check='exists' or 'force'.")
+  if(check == "file_info") stop("`use_caching` can only be used with check='exists' or 'force'.")
 
   # `cache_type`, `_cache_fn` arguments
-  cache_type_list <- get_cache_type_list(cache_type = cache_type, write_cache_fn = write_cache_fn, read_cache_fn = read_cache_fn)
+  cache_type_list <- get_cache_type_list(cache_type = cache_type, write_cache_fn = write_cache_fn, read_cache_fn = read_cache_fn, cache_ext = cache_ext)
   write_cache_fn <- cache_type_list$write
   read_cache_fn <- cache_type_list$read
   cache_file_ext <- cache_type_list$ext
@@ -180,36 +268,8 @@ use_caching <- function(expr,
 
 }
 
-#' @rdname cached_read
-#'
-#' @param ... Arguments passed on to `readr::read_csv` (if installed) or `utils::read.csv`.
-#'
-#' @export
-cached_read_csv <- function(files,
-                            cache_type = NULL,
-                            write_cache_fn = NULL,
-                            read_cache_fn = NULL,
-                            label = "data",
-                            cache_dir = NULL,
-                            check = "file_info",
-                            ...) {
 
-  read_fn <- if(requireNamespace("readr", quietly = TRUE)) readr::read_csv else utils::read.csv
-
-  cached_read(
-    files = files,
-    read_fn = \(f) read_fn(f, ...),
-    cache_type = cache_type,
-    write_cache_fn = write_cache_fn,
-    read_cache_fn = read_cache_fn,
-    label = label,
-    cache_dir = cache_dir,
-    check = check
-  )
-}
-
-
-# File Info Helper -------------------------------------------------------
+# File Info Helpers -------------------------------------------------------
 
 #' Get information from fs::file_info that is expected to stay the same if the contents aren't modified.
 #'
@@ -224,8 +284,26 @@ get_file_info <- function(path) {
 
     # Convert all columns to character to avoid issue with time zone parsing.
     dplyr::mutate(
-      dplyr::across(.fns=as.character)
+      dplyr::across(dplyr::everything(), as.character)
     )
+}
+
+#' Compare two dfs (ignoring row order) and ensure they are equal.
+#'
+#' @description
+#' Similar to dplyr::all_equal(x, y, ignore_row_order=TRUE) which is now deprecated.
+#'
+#' @inheritParams base::all.equal
+dfs_equal <- function(target, current) {
+  sort_df <- \(df) df |>
+    tibble::as_tibble() |>
+    dplyr::arrange(dplyr::across(dplyr::everything()))
+
+  isTRUE(all.equal(
+    sort_df(target),
+    sort_df(current),
+    check.attributes = FALSE  # Both are tibbles.
+  ))
 }
 
 
@@ -259,11 +337,13 @@ get_cache_type_list <- function(cache_type, write_cache_fn, read_cache_fn, cache
 
   cache_type_exists <- !is.null(cache_type)
 
-  if(cache_type_exists && any_manual_param_exists) stop("Must provide either `cache_type` or the `_cache_fn` and `cache_ext` arguments, but not both.")
+  if(cache_type_exists) {
+    if(!any_manual_param_exists) return(parse_cache_type(cache_type))
+    else stop("Must provide either `cache_type` or the `_cache_fn` and `cache_ext` arguments, but not both.")
+  }
 
   if(any_manual_param_exists && !all_manual_params_exist) stop("Must provide all of `write_cache_fn`, `read_cache_fn`, and `cache_ext` if not using `cache_type`.")
 
-  # Base case: parameters were passed directly.
   if(all_manual_params_exist) {
     return(list(write=write_cache_fn, read=read_cache_fn, ext=cache_ext))
   }
@@ -280,8 +360,8 @@ get_cache_type_list <- function(cache_type, write_cache_fn, read_cache_fn, cache
 #' @inheritParams cached_read
 parse_cache_type <- function(cache_type) {
 
-  # Validate `cache_type`
-  VALID_CACHE_TYPE_STR_VALUES <- c("arrow", "csv")
+  # Validate
+  VALID_CACHE_TYPE_STR_VALUES <- c("arrow", "data.table", "csv")
   VALID_CACHE_TYPE_STR_NAMES <- glue::glue_collapse(glue::glue("'{VALID_CACHE_TYPE_STR_VALUES}'"), sep=", ")
   if(!is.null(cache_type) &&
      (length(cache_type) != 1 || !cache_type %in% VALID_CACHE_TYPE_STR_VALUES)
@@ -289,26 +369,60 @@ parse_cache_type <- function(cache_type) {
     stop(glue::glue("`cache_type` must be {VALID_CACHE_TYPE_STR_NAMES}, or NULL."))
   }
 
-  # Parse `cache_type`
+  # Parse
   arrow_cache_list <- if(requireNamespace("arrow", quietly = TRUE)) list(write=arrow::write_feather, read=arrow::read_feather, ext="cache_arrow")
+  arrow_csv_cache_list <- if(requireNamespace("arrow", quietly = TRUE)) list(write=arrow::write_csv_arrow, read=arrow::read_csv_arrow, ext="cache_csv")
   readr_csv_cache_list <- if(requireNamespace("readr", quietly = TRUE)) list(write=readr::write_csv, read=readr::read_csv, ext="cache_csv")
+  datatable_csv_cache_list <- if(requireNamespace("data.table", quietly = TRUE)) list(write=data.table::fwrite, read=data.table::fread, ext="cache_csv")
   base_csv_cache_list <- list(write=utils::write.csv, read=utils::read.csv, ext="cache_csv")
 
   if(is.null(cache_type)) {
-    for(lst in list(arrow_cache_list, readr_csv_cache_list, base_csv_cache_list)){
-      if(!is.null(lst)) return(lst)
+    # arrow -> readr -> utils
+    resolution_order <- list(
+      arrow=arrow_cache_list,
+      readr=readr_csv_cache_list,
+      data.table=datatable_csv_cache_list,
+      utils=base_csv_cache_list
+    )
+    for(res_name in names(resolution_order)){
+      cache_list <- resolution_order[[res_name]]
+      if(!is.null(cache_list)) {
+        message(glue::glue("cache_type=NULL: Using {res_name} for caching..."))
+        return(cache_list)
+      }
     }
   }
 
   else if(cache_type == "arrow") {
-    if(is.null(arrow_cache_list)) stop("Cannot use `cache_type='arrow'` if the arrow package is not installed.")
+    if(is.null(arrow_cache_list)) stop("Cannot use `cache_type='arrow'` if the `arrow` package is not installed.")
+    message("cache_type='arrow': Using arrow for caching...")
     return(arrow_cache_list)
   }
 
-  else if(cache_type == "csv") {
-    if(!is.null(readr_csv_cache_list)) return(readr_csv_cache_list)
-    else return(base_csv_cache_list)
+  else if(cache_type == "data.table") {
+    if(is.null(datatable_csv_cache_list)) stop("Cannot use `cache_type='data.table'` if the `data.table` package is not installed.")
+    message("cache_type='data.table': Using data.table for caching...")
+    return(datatable_csv_cache_list)
   }
+
+  else if(cache_type == "csv") {
+    # arrow_csv -> readr -> data.table -> utils
+    resolution_order <- list(
+      arrow=arrow_csv_cache_list,
+      readr=readr_csv_cache_list,
+      data.table=datatable_csv_cache_list,
+      utils=base_csv_cache_list
+    )
+    for(res_name in names(resolution_order)){
+      cache_list <- resolution_order[[res_name]]
+      if(!is.null(cache_list)) {
+        message(glue::glue("cache_type='csv': Using {res_name} for caching..."))
+        return(cache_list)
+      }
+    }
+  }
+
+  stop(glue::glue("Failed to parse `cache_type` ('{cache_type}') correctly."))
 }
 
 

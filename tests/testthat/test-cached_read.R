@@ -37,9 +37,7 @@ original_read_csv_with_expectation <- function(expected, ...) {
 
 # Expect cache files.
 CACHE_LABEL <- "data"
-CACHE_EXT <- "cache_arrow"
-CACHE_INFO_EXT <- "cache_arrow_info"
-expect_cache_file_exists <- function(dir_path, exists, ext=CACHE_EXT) {
+expect_cache_file_exists <- function(dir_path, exists, ext="cache_arrow") {
   expected_cache_file_path <- fs::path(dir_path, CACHE_LABEL, ext = ext)
   cache_file_exists <- fs::file_exists(expected_cache_file_path)
 
@@ -47,16 +45,9 @@ expect_cache_file_exists <- function(dir_path, exists, ext=CACHE_EXT) {
   else expect_false(cache_file_exists)
 }
 
-expect_cache_file_info_exists <- function(dir_path, exists) {
-  expect_cache_file_exists(dir_path, exists, ext=CACHE_INFO_EXT)
-}
-
 # Expect Equal DFs
-expect_equal_dfs <- function(x, y, ignore_row_order=TRUE, ...) {
-  expect_true(
-    dplyr::all_equal(x, y, ignore_row_order = ignore_row_order, ...) |>
-      isTRUE()
-  )
+expect_equal_dfs <- function(x, y) {
+  expect_true(dfs_equal(x, y))
 }
 
 
@@ -79,15 +70,17 @@ test_that("cached_read with check='file_info' works correctly", {
 
   iris_complete <- silent_read_csv(IRIS_COMPLETE_PATH)
 
-  expect_cache_file_exists(temp_cache_dir, FALSE)
-  expect_cache_file_info_exists(temp_cache_dir, FALSE)
+  CACHE_EXT = "cache_arrow"
+  CACHE_INFO_EXT = paste0(CACHE_EXT, "_info")
+
+  expect_cache_file_exists(temp_cache_dir, FALSE, ext=CACHE_EXT)
+  expect_cache_file_exists(temp_cache_dir, FALSE, ext=CACHE_INFO_EXT)
   for(i in 1:3) {
     original_call_expected <- i == 1
     res <- cached_read(IRIS_PATHS_BY_SPECIES,
                        \(f) original_read_csv_with_expectation(expected = original_call_expected, f),
                        label = CACHE_LABEL,
                        cache_dir = temp_cache_dir)
-
     expect_equal_dfs(res, iris_complete)
     # file_info_path <- fs::path(temp_cache_dir, CACHE_LABEL, ext = CACHE_INFO_EXT)
     # fs::file_copy(
@@ -95,31 +88,47 @@ test_that("cached_read with check='file_info' works correctly", {
     #   fs::path(EXTDATA_FOLDER, glue::glue("{CACHE_LABEL}_{i}"), ext = CACHE_INFO_EXT)
     # )
 
-    expect_cache_file_exists(temp_cache_dir, TRUE)
-    expect_cache_file_info_exists(temp_cache_dir, TRUE)
+    expect_cache_file_exists(temp_cache_dir, TRUE, ext=CACHE_EXT)
+    expect_cache_file_exists(temp_cache_dir, TRUE, ext=CACHE_INFO_EXT)
   }
 })
 
-test_that("cached_read with check='exists' works correctly", {
+expect_check_exists_functions_correctly <- function(cache_ext, ...) {
   temp_cache_dir <- create_temp_cache_dir()
 
   iris_complete <- silent_read_csv(IRIS_COMPLETE_PATH)
 
-  expect_cache_file_exists(temp_cache_dir, FALSE)
-  expect_cache_file_info_exists(temp_cache_dir, FALSE)
+  CACHE_INFO_EXT = paste0(cache_ext, "_info")
+
+  expect_cache_file_exists(temp_cache_dir, FALSE, ext=cache_ext)
+  expect_cache_file_exists(temp_cache_dir, FALSE, ext=CACHE_INFO_EXT)
+
   for(i in 1:3) {
     original_call_expected <- i == 1
     res <- cached_read(IRIS_PATHS_BY_SPECIES,
                        \(f) original_read_csv_with_expectation(expected = original_call_expected, f),
                        label = CACHE_LABEL,
                        check = "exists",
-                       cache_dir = temp_cache_dir)
+                       cache_dir = temp_cache_dir,
+                       ...)
 
     expect_equal_dfs(res, iris_complete)
 
-    expect_cache_file_exists(temp_cache_dir, TRUE)
-    expect_cache_file_info_exists(temp_cache_dir, FALSE)
+    expect_cache_file_exists(temp_cache_dir, TRUE, ext=cache_ext)
+    expect_cache_file_exists(temp_cache_dir, FALSE, ext=CACHE_INFO_EXT)
   }
+}
+
+test_that("cached_read with check='exists' works correctly", {
+  expect_check_exists_functions_correctly("cache_arrow")
+})
+
+test_that("cached_read with check='exists' and type='data.table' works correctly", {
+  expect_check_exists_functions_correctly("cache_csv", cache_type = "data.table")
+})
+
+test_that("cached_read with check='exists' and type='csv' works correctly", {
+  expect_check_exists_functions_correctly("cache_csv", cache_type = "csv")
 })
 
 test_that("cached_read_csv works correctly", {
@@ -146,8 +155,12 @@ test_that("use_caching works correctly", {
 
   iris_complete <- silent_read_csv(IRIS_COMPLETE_PATH)
 
-  expect_cache_file_exists(temp_cache_dir, FALSE)
-  expect_cache_file_info_exists(temp_cache_dir, FALSE)
+
+  CACHE_EXT = "cache_arrow"
+  CACHE_INFO_EXT = paste0(CACHE_EXT, "_info")
+
+  expect_cache_file_exists(temp_cache_dir, FALSE, ext=CACHE_EXT)
+  expect_cache_file_exists(temp_cache_dir, FALSE, ext=CACHE_INFO_EXT)
   for(i in 1:3) {
     original_call_expected <- i == 1
     res <- original_read_csv_with_expectation(expected = original_call_expected,
@@ -156,8 +169,8 @@ test_that("use_caching works correctly", {
                   cache_dir=temp_cache_dir)
 
     expect_equal_dfs(res, iris_complete)
-    expect_cache_file_exists(temp_cache_dir, TRUE)
-    expect_cache_file_info_exists(temp_cache_dir, FALSE)
+    expect_cache_file_exists(temp_cache_dir, TRUE, ext=CACHE_EXT)
+    expect_cache_file_exists(temp_cache_dir, FALSE, ext=CACHE_INFO_EXT)
   }
 
 })

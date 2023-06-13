@@ -177,50 +177,6 @@ cached_read <- function(files,
 
 #' @rdname cached_read
 #'
-#' @param ... Arguments passed on to `readr::read_csv` (if installed) or `utils::read.csv`.
-#'
-#' @export
-cached_read_csv <- function(files,
-                            cache_type = NULL,
-                            write_cache_fn = NULL,
-                            read_cache_fn = NULL,
-                            label = "data",
-                            cache_dir = NULL,
-                            check = "file_info",
-                            ...) {
-  with_ellipsis <- function(fn, ...) {
-    \(fs) fn(fs, ...)
-  }
-
-  vectorize_on_files <- function(unvectorized_fn, ...) {
-    \(fs) lapply(fs, unvectorized_fn, ...) |> dplyr::bind_rows()
-  }
-
-  if(requireNamespace("arrow", quietly = TRUE)) {
-    read_fn <- vectorize_on_files(arrow::read_csv_arrow, ...)
-  } else if(requireNamespace("readr", quietly = TRUE)) {
-    read_fn <- with_ellipsis(readr::read_csv, ...)
-  } else if(requireNamespace("data.table", quietly = TRUE)) {
-    read_fn <- vectorize_on_files(data.table::fread, ...)
-  } else {
-    read_fn <- vectorize_on_files(utils::read.csv, ...)
-  }
-
-  cached_read(
-    files = files,
-    read_fn = read_fn,
-    cache_type = cache_type,
-    write_cache_fn = write_cache_fn,
-    read_cache_fn = read_cache_fn,
-    label = label,
-    cache_dir = cache_dir,
-    check = check
-  )
-}
-
-
-#' @rdname cached_read
-#'
 #' @param expr Expression that generates a tibble, typically reading from files.
 #'
 #' @export
@@ -420,7 +376,4 @@ parse_cache_type <- function(cache_type) {
 
   stop(glue::glue("Failed to parse `cache_type` ('{cache_type}') correctly."))
 }
-
-
-
 

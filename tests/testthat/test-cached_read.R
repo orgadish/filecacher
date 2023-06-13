@@ -131,24 +131,6 @@ test_that("cached_read with check='exists' and type='csv' works correctly", {
   expect_check_exists_functions_correctly("cache_csv", cache_type = "csv")
 })
 
-test_that("cached_read_csv works correctly", {
-  temp_cache_dir <- create_temp_cache_dir()
-
-  iris_complete <- silent_read_csv(IRIS_COMPLETE_PATH)
-
-  expect_cache_file_exists(temp_cache_dir, FALSE)
-  for(i in 1:3) {
-    expect_equal_dfs(
-      iris_complete,
-      suppressMessages(cached_read_csv(IRIS_PATHS_BY_SPECIES,
-                                       label = CACHE_LABEL,
-                                       cache_dir = temp_cache_dir))
-    )
-
-    expect_cache_file_exists(temp_cache_dir, TRUE)
-  }
-})
-
 
 test_that("use_caching works correctly", {
   temp_cache_dir <- create_temp_cache_dir()

@@ -2,7 +2,6 @@
 % Please edit documentation in R/cached_read.R
 \name{cached_read}
 \alias{cached_read}
-\alias{cached_read_csv}
 \alias{use_caching}
 \title{Read data and save to a local "cache" file.}
 \usage{
@@ -16,17 +15,6 @@ cached_read(
   write_cache_fn = NULL,
   read_cache_fn = NULL,
   cache_ext = NULL
-)
-
-cached_read_csv(
-  files,
-  cache_type = NULL,
-  write_cache_fn = NULL,
-  read_cache_fn = NULL,
-  label = "data",
-  cache_dir = NULL,
-  check = "file_info",
-  ...
 )
 
 use_caching(
@@ -92,8 +80,6 @@ If NULL (default), uses the common path among the inputs, as determined by \code
 \code{cache_type} must be NULL, both functions must be provided, and \code{cache_ext} cannot be null..}
 
 \item{cache_ext}{The extension to use on the cache file if \code{write_cache_fn} and \code{read_cache_fn} are provided.}
-
-\item{...}{Arguments passed on to \code{readr::read_csv} (if installed) or \code{utils::read.csv}.}
 
 \item{expr}{Expression that generates a tibble, typically reading from files.}
 }

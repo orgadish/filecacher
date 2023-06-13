@@ -8,8 +8,8 @@
 cached_read(
   files,
   read_fn,
+  label,
   cache_type = NULL,
-  label = "data",
   cache_dir = NULL,
   check = "file_info",
   write_cache_fn = NULL,
@@ -19,8 +19,8 @@ cached_read(
 
 use_caching(
   expr,
+  label,
   cache_type = NULL,
-  label = "data",
   cache_dir = NULL,
   check = "exists",
   write_cache_fn = NULL,
@@ -47,6 +47,9 @@ To use multiple files with a function that only takes a single file, use \code{l
  \\(files) purrr::map(files, data.table::fread) |> purrr::list_rbind()
 }\if{html}{\out{</div>}}}
 
+\item{label}{The label to give the cached file,
+e.g. generating a file with the path 'my_data.cache_arrow'.}
+
 \item{cache_type}{The type of file to use for caching.
 This can be one of two options:
 \enumerate{
@@ -62,9 +65,6 @@ This can be one of two options:
 \item Uses \code{write_cache_fn}, \code{read_cache_fn}, and \code{cache_ext} if provided.
 }
 }}
-
-\item{label}{The label to give the cached file,
-e.g. generating a file with the path 'data.fused_arrow'.}
 
 \item{cache_dir}{Path to the folder that will contain the cache file.
 If NULL (default), uses the common path among the inputs, as determined by \code{fs::path_common}.}

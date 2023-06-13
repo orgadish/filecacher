@@ -71,7 +71,7 @@
 #'      - (Default) Uses "arrow" if installed, otherwise "csv".
 #'      - Uses `write_cache_fn`, `read_cache_fn`, and `cache_ext` if provided.
 #' @param label The label to give the cached file,
-#'  e.g. generating a file with the path 'data.fused_arrow'.
+#'  e.g. generating a file with the path 'my_data.cache_arrow'.
 #' @param cache_dir Path to the folder that will contain the cache file.
 #'    If NULL (default), uses the common path among the inputs, as determined by `fs::path_common`.
 #' @param check Determines when to re-read from the original sources. This can be one of the following options:
@@ -112,8 +112,8 @@
 #' }
 cached_read <- function(files,
                         read_fn,
+                        label,
                         cache_type = NULL,
-                        label = "data",
                         cache_dir = NULL,
                         check = "file_info",
                         write_cache_fn = NULL,
@@ -181,8 +181,8 @@ cached_read <- function(files,
 #'
 #' @export
 use_caching <- function(expr,
+                        label,
                         cache_type = NULL,
-                        label = "data",
                         cache_dir = NULL,
                         check = "exists",
                         write_cache_fn = NULL,

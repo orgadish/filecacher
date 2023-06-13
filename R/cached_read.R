@@ -387,7 +387,6 @@ parse_cache_type <- function(cache_type) {
     for(res_name in names(resolution_order)){
       cache_list <- resolution_order[[res_name]]
       if(!is.null(cache_list)) {
-        message(glue::glue("cache_type=NULL: Using {res_name} for caching..."))
         return(cache_list)
       }
     }
@@ -395,13 +394,11 @@ parse_cache_type <- function(cache_type) {
 
   else if(cache_type == "arrow") {
     if(is.null(arrow_cache_list)) stop("Cannot use `cache_type='arrow'` if the `arrow` package is not installed.")
-    message("cache_type='arrow': Using arrow for caching...")
     return(arrow_cache_list)
   }
 
   else if(cache_type == "data.table") {
     if(is.null(datatable_csv_cache_list)) stop("Cannot use `cache_type='data.table'` if the `data.table` package is not installed.")
-    message("cache_type='data.table': Using data.table for caching...")
     return(datatable_csv_cache_list)
   }
 
@@ -416,7 +413,6 @@ parse_cache_type <- function(cache_type) {
     for(res_name in names(resolution_order)){
       cache_list <- resolution_order[[res_name]]
       if(!is.null(cache_list)) {
-        message(glue::glue("cache_type='csv': Using {res_name} for caching..."))
         return(cache_list)
       }
     }

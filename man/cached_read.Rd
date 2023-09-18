@@ -2,159 +2,74 @@
 % Please edit documentation in R/cached_read.R
 \name{cached_read}
 \alias{cached_read}
-\alias{use_caching}
-\title{Read data and save to a local "cache" file.}
+\alias{cached_read_csv}
+\title{Read files via cache of file list and contents.}
 \usage{
 cached_read(
   files,
-  read_fn,
   label,
-  cache_type = NULL,
-  cache_dir = NULL,
-  check = "file_info",
-  write_cache_fn = NULL,
-  read_cache_fn = NULL,
-  cache_ext = NULL
+  read_fn,
+  ...,
+  cache = NULL,
+  type = NULL,
+  skip_file_info = FALSE,
+  force = FALSE
 )
 
-use_caching(
-  expr,
+cached_read_csv(
+  files,
   label,
-  cache_type = NULL,
-  cache_dir = NULL,
-  check = "exists",
-  write_cache_fn = NULL,
-  read_cache_fn = NULL,
-  cache_ext = NULL
+  ...,
+  read_type = NULL,
+  cache = NULL,
+  type = NULL,
+  skip_file_info = FALSE,
+  force = FALSE
 )
 }
 \arguments{
-\item{files}{A vector of path(s) to file(s). This will be passed as the first argument to \code{read_fn}.}
+\item{files}{A file or files to read with \code{read_fn}}
 
-\item{read_fn}{A function that can read \code{files} into a data frame.
-This can be one of three options:
-\enumerate{
-\item Standard function object, e.g. \code{readr::read_csv}
-\item An anonymous function that takes \code{files}, e.g.
-\itemize{
-\item \verb{\\(files) readr::read_csv(files, skip = 2) |> janitor::clean_names()}
-}
-}
+\item{label}{A string to use as the name of the file to cache.}
 
-To use multiple files with a function that only takes a single file, use \code{lapply} and \code{dplyr::bind_rows} or \code{purrr::map} and \code{purr::list_rbind}, e.g.
+\item{read_fn}{A function which takes file(s) as its first parameter and reads them.
+To use a single-input read function such as \code{arrow::read_csv_arrow} with multiple files,
+use \code{vectorize_reader}, e.g. \code{read_fn=vectorize_reader(arrow::read_csv_arrow)}.}
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{ \\(files) lapply(files, data.table::fread) |> dplyr::bind_rows()
- \\(files) purrr::map(files, data.table::fread) |> purrr::list_rbind()
-}\if{html}{\out{</div>}}}
+\item{...}{Arguments to pass to \code{read_fn}.}
 
-\item{label}{The label to give the cached file,
-e.g. generating a file with the path 'my_data.cache_arrow'.}
+\item{cache}{An existing cachem object or a path to an existing directory to use for caching.}
 
-\item{cache_type}{The type of file to use for caching.
-This can be one of two options:
-\enumerate{
-\item One of the following strings:
-\itemize{
-\item "arrow" to use \verb{arrow::<read|write>_feather},
-\item "data.table" to use \verb{data.table::f<read|write>},
-\item "csv" to use the first available of \verb{arrow::<read|write>_csv}, \code{readr}, \code{data.table}, or base R \code{utils}.
-}
-\item NULL:
-\itemize{
-\item (Default) Uses "arrow" if installed, otherwise "csv".
-\item Uses \code{write_cache_fn}, \code{read_cache_fn}, and \code{cache_ext} if provided.
-}
-}}
+\item{type}{A string describing the type of cache.
+Must be NULL or one of 'rds', 'parquet', or 'csv'.
+If NULL (default), uses 'rds'.}
 
-\item{cache_dir}{Path to the folder that will contain the cache file.
-If NULL (default), uses the common path among the inputs, as determined by \code{fs::path_common}.}
+\item{skip_file_info}{Whether to skip saving and/or checking the file info.
+Use this when even querying the filesystem (without opening files) is slow.}
 
-\item{check}{Determines when to re-read from the original sources. This can be one of the following options:
-\enumerate{
-\item (default) "file_info": Stores file metadata and re-reads if there have been any changes.
-\item "exists": Checks whether the cache file exists in the \code{cache_dir} with the indicated label.
-\item "force": Does not do any checking and simply re-builds the cache file.
-}}
+\item{force}{Whether to force reading the files and caching the results, even if the cache file exists.}
 
-\item{write_cache_fn, read_cache_fn}{Functions used to write and read the cache file. To use this option,
-\code{cache_type} must be NULL, both functions must be provided, and \code{cache_ext} cannot be null..}
+\item{read_type}{Type of csv read function to use. One of
+'readr' (\code{readr::read_csv}), 'data.table' (\code{data.table::fread}), 'arrow' (\code{arrow::read_csv_arrow}),
+or 'base' (\code{utils::read.csv}). If NULL (default), picks the first in that list whose package is installed.
 
-\item{cache_ext}{The extension to use on the cache file if \code{write_cache_fn} and \code{read_cache_fn} are provided.}
-
-\item{expr}{Expression that generates a tibble, typically reading from files.}
+Automatically vectorizes the single-input read functions (all other than \code{readr::read_csv}) using \code{vectorize_reader}.}
 }
 \value{
-A \code{tibble}. Results are coerced to a tibble regardless of read_fn or cache_type to ensure uniformity and predictability of output type.
+The result of \code{read_fn(files, ...)}.
 }
 \description{
-Read data and save to a local "cache" file for easier management and re-reading.
+Reads data and save to a local "cache" file for easier management and re-reading.
 
-If no cache file already exists, performs the desired read operation and writes the results to a cache file. Optionally, also saves a cache file containing the latest file update info.
-If the cache file exists, it is read instead. By default it also tracks for file updating so that the file(s) are
-re-read from scratch if they have changed.
+By default, also saves the file info to determine whether the cache is valid, or whether the contents need to be updated because the files have been modified.
+To skip this, or force reading from scratch, use \code{with_cache}, \code{force_cache} directly,
+or set \code{skip_file_info=TRUE} or \code{force=TRUE}, respectively.
 
-The type of cache file used depends on the \code{cache_type} parameter and the packages installed.
-We recommend installing the \code{arrow} package, which allows use writing and reading into an Arrow IPC format.
+If updating is called for, all the files are re-read.
+
+\code{cached_read_csv} is a convenience function using \code{readr::read_csv} if \code{readr} is installed
+(typically through the \code{tidyverse}), or \code{utils::read.csv} otherwise.
 }
-\details{
-\subsection{\code{cached_read}}{
-
-This the most flexible version. By default (\code{check = "file_info"}), it checks whether
-the original files have been modified (using \code{fs::file_info}) and therefore whether the results should be
-re-read from the original files or from the cache file.
-
-When reading from a slow file system, even getting the file information can be slow; in this case, we
-recommend \code{check = "exists"} to only check whether the cache exists.
-
-e.g.
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{cached_read(some_files, arrow::read_feather)
-}\if{html}{\out{</div>}}
-
-to read from a set of arrow feather files.
-}
-
-\subsection{\code{cached_read_csv}}{
-
-This is like \code{cached_read} but uses the first read csv function available between \code{arrow},
-\code{readr}, \code{data.table}, or base R \code{utils}.
-}
-
-\subsection{\code{use_caching}}{
-
-Unlike \code{cached_read}, this can be piped at the end of an existing data pipeline, making it easy
-to integrate temporarily, if desired. However, because it does not have direct access to the file
-list, it cannot use \code{check = "file_info"}.
-
-e.g.
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{readr::read_csv(some_files) |>
-  janitor::clean_names() |>
-  dplyr::summarize(...) |>
-  use_caching()
-}\if{html}{\out{</div>}}
-}
-}
-\examples{
-\dontrun{
-
-
-# Standard read method
-res <- some_files |>
-  readr::read_csv() |>
-  janitor::clean_names()
-
-# With caching there's now a single file that can be re-read more quickly in the future.
-res <- some_files |>
-  cached_read(
-    \(file) readr::read_csv(file)
-      |> janitor::clean_names()
-  )
-
-res <- some_files |>
-  readr::read_csv() |>
-  janitor::clean_names() |>
-  use_caching()
-
-}
+\seealso{
+\code{\link[=vectorize_reader]{vectorize_reader()}} to convert a single-input read function into a multiple-input function.
 }

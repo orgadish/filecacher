@@ -4,7 +4,7 @@ write_to_extdata <- function(tbl, label) {
   readr::write_csv(
     tbl,
     fs::path(
-      fs::path_package("extdata", package="cachedread"),
+      fs::path_package("extdata", package="filecacher"),
       glue::glue("iris_{label}"), ext="csv"
     )
   )

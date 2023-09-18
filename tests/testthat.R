@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
-library(cachedread)
+library(filecacher)
 
-test_check("cachedread")
+test_check("filecacher")

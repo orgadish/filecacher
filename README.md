@@ -35,7 +35,7 @@ EXAMPLE_DATA_FOLDER <- fs::path_package("extdata", package = "filecacher")
 
 # Example files: iris table split by species into three files.
 IRIS_FILES_BY_SPECIES <- fs::dir_ls(EXAMPLE_DATA_FOLDER, glob = "*_only.csv")
-IRIS_FILES_BY_SPECIES |> fs::path_file()
+fs::path_file(IRIS_FILES_BY_SPECIES)
 #> [1] "iris_setosa_only.csv"     "iris_versicolor_only.csv"
 #> [3] "iris_virginica_only.csv"
 
@@ -51,77 +51,77 @@ something_that_takes_a_while <- function(x) {
 }
 
 # Example standard pipeline without caching: 
-#   1. Read using `readr::read_csv`.  
-#   2. Clean names using `janitor::clean_names`.
-#   3. Perform some custom processing that takes a while (currently using sleep as an example).
-normal_pipeline <- function(files) {
+#   1. Read using a vectorized `read.csv`.
+#   2. Perform some custom processing that takes a while (currently using sleep as an example).
+normal_pipeline <- function(files, ...) {
   files |> 
-    readr::read_csv() |>
+    filecacher::vectorize_reader(read.csv)() |> 
     suppressMessages() |>
-    janitor::clean_names() |>
     something_that_takes_a_while()
 }
 
-# Same pipeline, using `cached_read`:
-pipeline_using_cached_read <- function(files) {
+# Same pipeline, using `cached_read` which caches the contents and the file info for checking later:
+pipeline_using_cached_read <- function(files, cache_dir) {
   files |> 
     filecacher::cached_read(
-      label = "processed_data_cached_read",
+      label = "processed_data_using_cached_read",
       read_fn = normal_pipeline, 
-      cache = TEMP_DIR
+      cache = cache_dir,
+      type = "parquet"
     )
 }
 
 # Alternate syntax, with `with_cache`. Using `with_cache` only checks that the cache file
 # exists, without any information about the file list.
-pipeline_using_with_cache <- function(files) {
+pipeline_using_with_cache <- function(files, cache_dir) {
   normal_pipeline(files) |> 
     filecacher::with_cache(
-      label = "processed_data_use_caching",
-      cache = TEMP_DIR
+      label = "processed_data_using_with_cache",
+      cache = cache_dir,
+      type = "parquet"
     )
 }
 
-# Time the pipelines when repeated 3 times:
-system_time_elapsed_in_ms <- function(expr) {
-  elapsed <- system.time(expr)['elapsed']
-  round(elapsed * 1000) |>
-    paste("ms")
+# Time each pipeline when repeated 3 times:
+time_pipeline <- function(pipeline_fn) {
+  function_name <- as.character(match.call()[2])
+  print(function_name)
+  
+  # Create a temporary directory for the cache.
+  cache_dir <- fs::path(TEMP_DIR, paste0("temp_", function_name))
+  fs::dir_create(cache_dir)
+  
+  gc()
+  
+  for(i in 1:3) {
+    print(system.time(pipeline_fn(IRIS_FILES_BY_SPECIES, cache_dir)))
+  }
 }
 
-tibble::tribble(
-  ~iteration, ~label, ~pipeline_fn,
-  1, "normal", normal_pipeline,
-  1, "cached_read", pipeline_using_cached_read,
-  1, "with_cache", pipeline_using_with_cache,
-  2, "normal", normal_pipeline,
-  2, "cached_read", pipeline_using_cached_read,
-  2, "with_cache", pipeline_using_with_cache,
-  3, "normal", normal_pipeline,
-  3, "cached_read", pipeline_using_cached_read,
-  3, "with_cache", pipeline_using_with_cache,
-) |>
-  
-  # Clean up results for display.
-  dplyr::rowwise() |>
-  dplyr::mutate(
-    elapsed = system_time_elapsed_in_ms(pipeline_fn(IRIS_FILES_BY_SPECIES))
-  ) |>
-  dplyr::ungroup() |>
-  dplyr::select(-pipeline_fn) |>
-  dplyr::arrange(factor(label, levels=c("normal", "cached_read", "with_cache")), iteration)
-#> # A tibble: 9 × 3
-#>   iteration label       elapsed
-#>       <dbl> <chr>       <chr>  
-#> 1         1 normal      1052 ms
-#> 2         2 normal      562 ms 
-#> 3         3 normal      552 ms 
-#> 4         1 cached_read 838 ms 
-#> 5         2 cached_read 7 ms   
-#> 6         3 cached_read 5 ms   
-#> 7         1 with_cache  567 ms 
-#> 8         2 with_cache  2 ms   
-#> 9         3 with_cache  2 ms
+time_pipeline(normal_pipeline)
+#> [1] "normal_pipeline"
+#>    user  system elapsed 
+#>   0.199   0.021   0.725 
+#>    user  system elapsed 
+#>   0.003   0.001   0.507 
+#>    user  system elapsed 
+#>   0.003   0.001   0.505
+time_pipeline(pipeline_using_cached_read)
+#> [1] "pipeline_using_cached_read"
+#>    user  system elapsed 
+#>   0.418   0.036   0.966 
+#>    user  system elapsed 
+#>   0.031   0.003   0.031 
+#>    user  system elapsed 
+#>   0.011   0.001   0.010
+time_pipeline(pipeline_using_with_cache)
+#> [1] "pipeline_using_with_cache"
+#>    user  system elapsed 
+#>   0.009   0.002   0.516 
+#>    user  system elapsed 
+#>   0.005   0.000   0.005 
+#>    user  system elapsed 
+#>   0.006   0.000   0.006
 
 
 # Delete the temporary directory created to run these examples.

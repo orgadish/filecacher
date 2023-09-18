@@ -48,7 +48,6 @@ file_cache <- function(cache=NULL, type=NULL) {
 
   arg_class <- class(cache)
   if("cachem" %in% arg_class) {
-    message("DEBUG: using existing cache...")
     cache_arg_type <- class(cache)[1]
     if(cache_arg_type != "cache_disk") {
       warning(glue::glue(
@@ -60,7 +59,6 @@ file_cache <- function(cache=NULL, type=NULL) {
 
   if(is.character(cache) && fs::is_dir(cache)) {
     cache_type <- interpret_cache_type(type)
-    message("DEBUG: creating new cache...")
     return(
       cachem::cache_disk(
         dir = cache,

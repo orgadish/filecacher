@@ -6,14 +6,16 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The main functions in this package are: 1. `with_cache`: Caches the
-expression in a local file on disk. 1. `force_cache`: Drop-in
-replacement for `with_cache` that forces reevaluation and saving into
-the cache. 1. `cached_read`: A wrapper around a typical read function
-that caches the result and the file list info. If the input file list
-info hasn’t changed (including date modified), the cache file will be
-read. This can save time if the original operation requires reading from
-many files, or involves lots of processing.
+The main functions in this package are:
+
+1.  `with_cache`: Caches the expression in a local file on disk.
+2.  `force_cache`: Drop-in replacement for `with_cache` that forces
+    reevaluation and saving into the cache.
+3.  `cached_read`: A wrapper around a typical read function that caches
+    the result and the file list info. If the input file list info
+    hasn’t changed (including date modified), the cache file will be
+    read. This can save time if the original operation requires reading
+    from many files, or involves lots of processing.
 
 See examples below.
 
@@ -108,28 +110,18 @@ tibble::tribble(
   dplyr::ungroup() |>
   dplyr::select(-pipeline_fn) |>
   dplyr::arrange(factor(label, levels=c("normal", "cached_read", "with_cache")), iteration)
-#> DEBUG: creating new cache...
-#> DEBUG: using existing cache...
-#> DEBUG: creating new cache...
-#> DEBUG: using existing cache...
-#> DEBUG: creating new cache...
-#> DEBUG: using existing cache...
-#> DEBUG: creating new cache...
-#> DEBUG: creating new cache...
-#> DEBUG: using existing cache...
-#> DEBUG: creating new cache...
 #> # A tibble: 9 × 3
 #>   iteration label       elapsed
 #>       <dbl> <chr>       <chr>  
-#> 1         1 normal      961 ms 
-#> 2         2 normal      556 ms 
-#> 3         3 normal      556 ms 
-#> 4         1 cached_read 882 ms 
-#> 5         2 cached_read 6 ms   
+#> 1         1 normal      1052 ms
+#> 2         2 normal      562 ms 
+#> 3         3 normal      552 ms 
+#> 4         1 cached_read 838 ms 
+#> 5         2 cached_read 7 ms   
 #> 6         3 cached_read 5 ms   
-#> 7         1 with_cache  556 ms 
+#> 7         1 with_cache  567 ms 
 #> 8         2 with_cache  2 ms   
-#> 9         3 with_cache  1 ms
+#> 9         3 with_cache  2 ms
 
 
 # Delete the temporary directory created to run these examples.

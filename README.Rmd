@@ -20,9 +20,10 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 The main functions in this package are:
-1. `with_cache`: Caches the expression in a local file on disk.
-1. `force_cache`: Drop-in replacement for `with_cache` that forces reevaluation and saving into the cache.
-1. `cached_read`: A wrapper around a typical read function that caches the result and the file list info. If the input file list info hasn't changed (including date modified), the cache file will be read. This can save time if the original operation requires reading from many files, or involves lots of processing.
+
+   1. `with_cache`: Caches the expression in a local file on disk.
+   1. `force_cache`: Drop-in replacement for `with_cache` that forces reevaluation and saving into the cache.
+   1. `cached_read`: A wrapper around a typical read function that caches the result and the file list info. If the input file list info hasn't changed (including date modified), the cache file will be read. This can save time if the original operation requires reading from many files, or involves lots of processing.
 
 
 See examples below.

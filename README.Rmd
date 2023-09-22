@@ -40,16 +40,16 @@ devtools::install_github("orgadish/filecacher")
 ## Example
 
 ```{r example}
-EXAMPLE_DATA_FOLDER <- fs::path_package("extdata", package = "filecacher")
+EXAMPLE_DATA_FOLDER <- system.file("extdata", package = "filecacher")
 
 # Example files: iris table split by species into three files.
-IRIS_FILES_BY_SPECIES <- fs::dir_ls(EXAMPLE_DATA_FOLDER, glob = "*_only.csv")
-fs::path_file(IRIS_FILES_BY_SPECIES)
+IRIS_FILES_BY_SPECIES <- list.files(EXAMPLE_DATA_FOLDER, pattern = "_only[.]csv$", full.names = TRUE)
+basename(IRIS_FILES_BY_SPECIES)
 
 
 # Create a temporary directory to run these examples.
-TEMP_DIR <- fs::path(EXAMPLE_DATA_FOLDER, "temp")
-fs::dir_create(TEMP_DIR)
+TEMP_DIR <- file.path(EXAMPLE_DATA_FOLDER, "temp")
+dir.create(TEMP_DIR)
 
 
 something_that_takes_a_while <- function(x) {
@@ -94,9 +94,9 @@ time_pipeline <- function(pipeline_fn) {
   function_name <- as.character(match.call()[2])
   print(function_name)
   
-  # Create a temporary directory for the cache.
-  cache_dir <- fs::path(TEMP_DIR, paste0("temp_", function_name))
-  fs::dir_create(cache_dir)
+  # Create a separate directory for the cache for this function.
+  cache_dir <- file.path(TEMP_DIR, paste0("temp_", function_name))
+  dir.create(cache_dir)
   
   gc()
   
@@ -111,6 +111,6 @@ time_pipeline(pipeline_using_with_cache)
 
 
 # Delete the temporary directory created to run these examples.
-fs::dir_delete(TEMP_DIR)
+unlink(TEMP_DIR, recursive = TRUE)
   
 ```

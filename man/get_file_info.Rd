@@ -2,7 +2,7 @@
 % Please edit documentation in R/util-get_file_info.R
 \name{get_file_info}
 \alias{get_file_info}
-\title{Get information from fs::file_info that is expected to stay the same if the contents aren't modified.}
+\title{Get information from file.info that is expected to stay the same if the contents aren't modified.}
 \usage{
 get_file_info(path)
 }

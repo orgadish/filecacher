@@ -16,7 +16,6 @@ LazyData: true
 Imports: 
     assertthat,
     cachem,
-    fs,
     glue,
     here
 RoxygenNote: 7.2.3
@@ -24,6 +23,7 @@ Suggests:
     arrow,
     data.table,
     dplyr,
+    fs,
     readr,
     testthat (>= 3.0.0),
     tibble

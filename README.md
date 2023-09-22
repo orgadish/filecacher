@@ -31,18 +31,18 @@ devtools::install_github("orgadish/filecacher")
 ## Example
 
 ``` r
-EXAMPLE_DATA_FOLDER <- fs::path_package("extdata", package = "filecacher")
+EXAMPLE_DATA_FOLDER <- system.file("extdata", package = "filecacher")
 
 # Example files: iris table split by species into three files.
-IRIS_FILES_BY_SPECIES <- fs::dir_ls(EXAMPLE_DATA_FOLDER, glob = "*_only.csv")
-fs::path_file(IRIS_FILES_BY_SPECIES)
+IRIS_FILES_BY_SPECIES <- list.files(EXAMPLE_DATA_FOLDER, pattern = "_only[.]csv$", full.names = TRUE)
+basename(IRIS_FILES_BY_SPECIES)
 #> [1] "iris_setosa_only.csv"     "iris_versicolor_only.csv"
 #> [3] "iris_virginica_only.csv"
 
 
 # Create a temporary directory to run these examples.
-TEMP_DIR <- fs::path(EXAMPLE_DATA_FOLDER, "temp")
-fs::dir_create(TEMP_DIR)
+TEMP_DIR <- file.path(EXAMPLE_DATA_FOLDER, "temp")
+dir.create(TEMP_DIR)
 
 
 something_that_takes_a_while <- function(x) {
@@ -87,9 +87,9 @@ time_pipeline <- function(pipeline_fn) {
   function_name <- as.character(match.call()[2])
   print(function_name)
   
-  # Create a temporary directory for the cache.
-  cache_dir <- fs::path(TEMP_DIR, paste0("temp_", function_name))
-  fs::dir_create(cache_dir)
+  # Create a separate directory for the cache for this function.
+  cache_dir <- file.path(TEMP_DIR, paste0("temp_", function_name))
+  dir.create(cache_dir)
   
   gc()
   
@@ -101,30 +101,30 @@ time_pipeline <- function(pipeline_fn) {
 time_pipeline(normal_pipeline)
 #> [1] "normal_pipeline"
 #>    user  system elapsed 
-#>   0.199   0.021   0.725 
+#>   0.257   0.027   0.812 
 #>    user  system elapsed 
-#>   0.003   0.001   0.507 
+#>   0.003   0.001   0.506 
 #>    user  system elapsed 
 #>   0.003   0.001   0.505
 time_pipeline(pipeline_using_cached_read)
 #> [1] "pipeline_using_cached_read"
 #>    user  system elapsed 
-#>   0.418   0.036   0.966 
+#>   0.384   0.042   1.026 
 #>    user  system elapsed 
-#>   0.031   0.003   0.031 
+#>   0.025   0.004   0.035 
 #>    user  system elapsed 
-#>   0.011   0.001   0.010
+#>   0.009   0.001   0.009
 time_pipeline(pipeline_using_with_cache)
 #> [1] "pipeline_using_with_cache"
 #>    user  system elapsed 
-#>   0.009   0.002   0.516 
+#>   0.008   0.001   0.512 
 #>    user  system elapsed 
 #>   0.005   0.000   0.005 
 #>    user  system elapsed 
-#>   0.006   0.000   0.006
+#>   0.004   0.000   0.005
 
 
 # Delete the temporary directory created to run these examples.
-fs::dir_delete(TEMP_DIR)
+unlink(TEMP_DIR, recursive = TRUE)
   
 ```

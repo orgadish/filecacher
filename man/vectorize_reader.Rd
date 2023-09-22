@@ -28,15 +28,15 @@ Note that these behave slightly differently:
 \examples{
 \dontrun{
 
-path_list <- fs::dir_ls(DIR, glob="*.csv")
+paths <- list.files(DIR, full.names=TRUE, pattern="[.]csv$")
 
-path_list |>
+paths |>
   vectorize_reader(read.csv)()
 
-path_list |>
+paths |>
   vectorize_reader(arrow::read_csv_arrow)()
 
-path_list |>
+paths |>
   vectorize_reader(data.table::fread)()
 
 }

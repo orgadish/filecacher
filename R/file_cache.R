@@ -57,7 +57,7 @@ file_cache <- function(cache=NULL, type=NULL) {
     return(cache)
   }
 
-  if(is.character(cache) && fs::is_dir(cache)) {
+  if(is.character(cache) && dir.exists(cache)) {
     cache_type <- interpret_cache_type(type)
     return(
       cachem::cache_disk(

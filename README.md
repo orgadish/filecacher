@@ -9,9 +9,7 @@
 The main functions in this package are:
 
 1.  `with_cache`: Caches the expression in a local file on disk.
-2.  `force_cache`: Drop-in replacement for `with_cache` that forces
-    reevaluation and saving into the cache.
-3.  `cached_read`: A wrapper around a typical read function that caches
+2.  `cached_read`: A wrapper around a typical read function that caches
     the result and the file list info. If the input file list info
     hasn’t changed (including date modified), the cache file will be
     read. This can save time if the original operation requires reading
@@ -53,7 +51,7 @@ something_that_takes_a_while <- function(x) {
 # Example standard pipeline without caching: 
 #   1. Read using a vectorized `read.csv`.
 #   2. Perform some custom processing that takes a while (currently using sleep as an example).
-normal_pipeline <- function(files, ...) {
+normal_pipeline <- function(files, ...) {  # Use ... to silently take cache_dir below.
   files |> 
     filecacher::vectorize_reader(read.csv)() |> 
     suppressMessages() |>
@@ -101,27 +99,27 @@ time_pipeline <- function(pipeline_fn) {
 time_pipeline(normal_pipeline)
 #> [1] "normal_pipeline"
 #>    user  system elapsed 
-#>   0.257   0.027   0.812 
+#>   0.048   0.009   0.571 
 #>    user  system elapsed 
-#>   0.003   0.001   0.506 
+#>   0.002   0.000   0.504 
 #>    user  system elapsed 
-#>   0.003   0.001   0.505
+#>   0.003   0.001   0.506
 time_pipeline(pipeline_using_cached_read)
 #> [1] "pipeline_using_cached_read"
 #>    user  system elapsed 
-#>   0.384   0.042   1.026 
+#>   0.481   0.046   1.072 
 #>    user  system elapsed 
-#>   0.025   0.004   0.035 
+#>   0.025   0.002   0.025 
 #>    user  system elapsed 
 #>   0.009   0.001   0.009
 time_pipeline(pipeline_using_with_cache)
 #> [1] "pipeline_using_with_cache"
 #>    user  system elapsed 
-#>   0.008   0.001   0.512 
+#>   0.008   0.001   0.511 
 #>    user  system elapsed 
-#>   0.005   0.000   0.005 
+#>   0.004   0.001   0.005 
 #>    user  system elapsed 
-#>   0.004   0.000   0.005
+#>   0.005   0.001   0.005
 
 
 # Delete the temporary directory created to run these examples.

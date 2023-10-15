@@ -1,44 +1,41 @@
-#' Vectorize a single-input read function to read multiple files at once.
+#' Vectorize a single-input read function to read multiple files
 #'
 #' @description
-#' Uses `dplyr::bind_rows` to bind the data frames, if installed. If not, uses `base::rbind`.
-#' Note that these behave slightly differently:
-#'   - `base::rbind` requires the data frames to have the same columns.
-#'   - `dplyr::bind_rows` generates a data frame with all the columns, filling NA where data was not present.
+#' The resulting vectorized read function still takes all the arguments of the
+#' original function.
+#'
+#' Uses `purrr::list_rbind()` to bind the data frames. Unlike `base::rbind()`,
+#' `purrr::list_rbind()` generates a data frame with a supserset of the columns
+#' from all the files, filling `NA` where data was not present.
 #'
 #'
-#' @param read_fn The read function to vectorize.
-#' @param bind_fn The function used to bind the results together.
-#'  If NULL (default) uses `dplyr::bind_rows`, if installed, or `rbind`.
-#' @param ... Arguments to `bind_fn`. For example, `dplyr::bind_rows` has a useful `.id` argument.
+#' @param read_fn The read function to vectorize. The first argument must be the files to read.
+#' @param file_path A string, which if provided, is the name of the column containing
+#'   containing the file paths in the result.
 #'
-#' @seealso [dplyr::bind_rows()]
+#' @seealso [purrr::list_rbind()]
 #'
-#' @return A single data.frame or data.frame-like object.
+#' @return A version of `read_fn` that can read multiple paths.
 #'
 #' @export
 #' @examples
 #' \dontrun{
 #'
-#' paths <- list.files(DIR, full.names=TRUE, pattern="[.]csv$")
+#' paths <- list.files(DIR, full.names = TRUE, pattern = "[.]csv$")
 #'
-#' paths |>
-#'   vectorize_reader(read.csv)()
+#' vectorize_reader(read.csv)(paths, sep = ";")
 #'
-#' paths |>
-#'   vectorize_reader(arrow::read_csv_arrow)()
+#' vectorize_reader(arrow::read_csv_arrow)(paths, col_names = FALSE)
 #'
-#' paths |>
-#'   vectorize_reader(data.table::fread)()
-#'
+#' vectorize_reader(data.table::fread)(paths)
 #' }
-vectorize_reader <- function(read_fn, bind_fn=NULL, ...) {
-  if(is.null(bind_fn)) {
-    bind_fn <- if(is_installed("dplyr")) dplyr::bind_rows else \(x) do.call(rbind, x)
-  }
-
+vectorize_reader <- function(read_fn, file_path = NULL) {
   function(files, ...) {
-    df_list <- lapply(files, read_fn, ...)
-    return(bind_fn(df_list, ...))
+    df_list <- lapply(stats::setNames(nm = files), read_fn, ...)
+    if(is.null(file_path)) {
+      return(purrr::list_rbind(df_list))
+    } else {
+      return(purrr::list_rbind(df_list, names_to = file_path))
+    }
   }
 }

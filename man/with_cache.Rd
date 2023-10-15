@@ -2,12 +2,9 @@
 % Please edit documentation in R/with_cache.R
 \name{with_cache}
 \alias{with_cache}
-\alias{force_cache}
-\title{Cache the input.}
+\title{Cache via a file}
 \usage{
-with_cache(x, label, cache = NULL, type = NULL)
-
-force_cache(x, label, cache = NULL, type = NULL)
+with_cache(x, label, cache = NULL, type = NULL, force = FALSE)
 }
 \arguments{
 \item{x}{The object to store in the cache. Must be compatible with the cache type.}
@@ -19,6 +16,8 @@ force_cache(x, label, cache = NULL, type = NULL)
 \item{type}{A string describing the type of cache.
 Must be NULL or one of 'rds', 'parquet', or 'csv'.
 If NULL (default), uses 'rds'.}
+
+\item{force}{If \code{TRUE}, forces evaluation even if the cache exists.}
 }
 \value{
 The value of \code{x}.
@@ -27,8 +26,8 @@ The value of \code{x}.
 If the cache exists, the object is retrieved from the cache.
 Otherwise, it is evaluated and stored for subsequent retrieval.
 
-Use \code{force_cache} to ensure the object is evaluated and stored anew in the cache.
+Use \code{force=TRUE} to ensure the object is evaluated and stored anew in the cache.
 
 The object evaluated must be compatible with the cache type.
-For example, a cache type of 'csv' or 'parquet' requires a data.frame or similar type.
+For example, a cache type of 'csv' or 'parquet' requires a \code{data.frame} or similar type.
 }

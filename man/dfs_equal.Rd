@@ -12,7 +12,7 @@ dfs_equal(target, current)
 \item{current}{other \R object, to be compared with \code{target}.}
 }
 \description{
-Similar to dplyr::all_equal(x, y, ignore_row_order=TRUE) which is now deprecated.
+Similar to \code{dplyr::all_equal(x, y, ignore_row_order=TRUE)}, which is now deprecated.
 
 If either argument is not a data.frame it returns FALSE, rather than
 }

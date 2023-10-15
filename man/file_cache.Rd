@@ -4,7 +4,7 @@
 \alias{file_cache}
 \title{Gets or creates a cachem object for use with other functions.}
 \usage{
-file_cache(cache = NULL, type = NULL)
+file_cache(cache = NULL, type = NULL, ext_prefix = TRUE)
 }
 \arguments{
 \item{cache}{An existing cachem object or a path to an existing directory to use for caching.}
@@ -12,9 +12,11 @@ file_cache(cache = NULL, type = NULL)
 \item{type}{A string describing the type of cache.
 Must be NULL or one of 'rds', 'parquet', or 'csv'.
 If NULL (default), uses 'rds'.}
+
+\item{ext_prefix}{Whether to add "cache_" before the file extension.}
 }
 \value{
-Either the cachem object provided, or a new \code{cachem::cache_disk} object.
+Either the \code{cachem} object provided, or a new \code{cachem::cache_disk()} object.
 }
 \description{
 Gets or creates a cachem object for use with other functions.

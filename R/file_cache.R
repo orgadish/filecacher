@@ -3,37 +3,40 @@
 #' @param type A string describing the type of cache.
 #' Must be NULL or one of 'rds', 'parquet', or 'csv'.
 #' If NULL (default), uses 'rds'.
+#' @param ext_prefix Whether to add "cache_" before the file extension.
 #'
 #' @return List of read_fn, write_fn, and extension for use with `cachem::cache_disk`.
-interpret_cache_type <- function(type) {
+interpret_cache_type <- function(type, ext_prefix = TRUE) {
   assertthat::assert_that(is.null(type) || assertthat::is.string(type))
-  if(is.null(type)) type <- "rds"
+  if (is.null(type)) type <- "rds"
+
+  build_ext <- function(ext) paste0(".", if (!ext_prefix) ext else paste0("cache_", ext))
 
   types <- list(
     "rds" = list(
-      read_fn=NULL,
-      write_fn=NULL,
-      extension = ".cache_rds"
+      read_fn = NULL,
+      write_fn = NULL,
+      extension = build_ext("rds")
     ),
     "parquet" = list(
-      read_fn=arrow::read_parquet,
-      write_fn=arrow::write_parquet,
-      extension=".cache_parquet"
+      read_fn = arrow::read_parquet,
+      write_fn = arrow::write_parquet,
+      extension = build_ext("parquet")
     ),
     "csv" = list(
-      read_fn=readr::read_csv,
-      write_fn=readr::write_csv,
-      extension=".cache_csv"
+      read_fn = readr::read_csv,
+      write_fn = readr::write_csv,
+      extension = build_ext("csv")
     )
   )
 
-  if(!type %in% names(types)) {
+  if (!type %in% names(types)) {
     valid_types <- glue::glue("'{names(types)}'") |>
       paste(collapse = ", ")
     stop(glue::glue("`type` must be NULL or one of {valid_types}, not '{type}'."))
   }
 
-   types[[type]]
+  types[[type]]
 }
 
 #' Gets or creates a cachem object for use with other functions.
@@ -41,24 +44,23 @@ interpret_cache_type <- function(type) {
 #' @param cache An existing cachem object or a path to an existing directory to use for caching.
 #' @inheritParams interpret_cache_type
 #'
-#' @return Either the cachem object provided, or a new `cachem::cache_disk` object.
+#' @return Either the `cachem` object provided, or a new `cachem::cache_disk()` object.
 #' @export
-file_cache <- function(cache=NULL, type=NULL) {
-  if(is.null(cache)) cache <- here::here()
+file_cache <- function(cache = NULL, type = NULL, ext_prefix = TRUE) {
+  if (is.null(cache)) cache <- here::here()
 
-  arg_class <- class(cache)
-  if("cachem" %in% arg_class) {
-    cache_arg_type <- class(cache)[1]
-    if(cache_arg_type != "cache_disk") {
+  cache_class <- class(cache)
+  if ("cachem" %in% cache_class) {
+    if (cache_class[1] != "cache_disk") {
       warning(glue::glue(
-        "Expected a cache of type 'cache_disk', but found '{cache_arg_type}' instead. Proceeding with this cache."
+        "Expected a cache of type 'cache_disk', but found '{cache_class[1]}' instead. Proceeding with this cache."
       ))
     }
     return(cache)
   }
 
-  if(is.character(cache) && dir.exists(cache)) {
-    cache_type <- interpret_cache_type(type)
+  if (is.character(cache) && dir.exists(cache)) {
+    cache_type <- interpret_cache_type(type, ext_prefix = ext_prefix)
     return(
       cachem::cache_disk(
         dir = cache,

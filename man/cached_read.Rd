@@ -3,13 +3,12 @@
 \name{cached_read}
 \alias{cached_read}
 \alias{cached_read_csv}
-\title{Read files via cache of file list and contents.}
+\title{Read files via cache of file list and contents}
 \usage{
 cached_read(
   files,
   label,
   read_fn,
-  ...,
   cache = NULL,
   type = NULL,
   skip_file_info = FALSE,
@@ -19,7 +18,6 @@ cached_read(
 cached_read_csv(
   files,
   label,
-  ...,
   read_type = NULL,
   cache = NULL,
   type = NULL,
@@ -28,15 +26,13 @@ cached_read_csv(
 )
 }
 \arguments{
-\item{files}{A file or files to read with \code{read_fn}}
+\item{files}{A file or files to read with \code{read_fn}.}
 
 \item{label}{A string to use as the name of the file to cache.}
 
 \item{read_fn}{A function which takes file(s) as its first parameter and reads them.
-To use a single-input read function such as \code{arrow::read_csv_arrow} with multiple files,
-use \code{vectorize_reader}, e.g. \code{read_fn=vectorize_reader(arrow::read_csv_arrow)}.}
-
-\item{...}{Arguments to pass to \code{read_fn}.}
+To use a single-input read function such as \code{arrow::read_csv_arrow()} with multiple files,
+use \code{vectorize_reader()}, e.g. \code{read_fn=vectorize_reader(arrow::read_csv_arrow)}.}
 
 \item{cache}{An existing cachem object or a path to an existing directory to use for caching.}
 
@@ -47,29 +43,32 @@ If NULL (default), uses 'rds'.}
 \item{skip_file_info}{Whether to skip saving and/or checking the file info.
 Use this when even querying the filesystem (without opening files) is slow.}
 
-\item{force}{Whether to force reading the files and caching the results, even if the cache file exists.}
+\item{force}{If \code{TRUE}, forces evaluation even if the cache exists.}
 
-\item{read_type}{Type of csv read function to use. One of
-'readr' (\code{readr::read_csv}), 'data.table' (\code{data.table::fread}), 'arrow' (\code{arrow::read_csv_arrow}),
-or 'base' (\code{utils::read.csv}). If NULL (default), picks the first in that list whose package is installed.
-
-Automatically vectorizes the single-input read functions (all other than \code{readr::read_csv}) using \code{vectorize_reader}.}
+\item{read_type}{Type of csv read function to use. One of:
+\itemize{
+\item 'readr': \code{readr::read_csv}
+\item 'data.table': \code{vectorize_reader(data.table::fread)}
+\item 'arrow': \code{vectorize_reader(arrow::read_csv_arrow)}
+\item 'base': \code{vectorize_reader(utils::read.csv)}
+\item \code{NULL} (default): uses the first installed
+}}
 }
 \value{
 The result of \code{read_fn(files, ...)}.
 }
 \description{
-Reads data and save to a local "cache" file for easier management and re-reading.
+Reads data and save to a local  file for easier management and re-reading.
 
 By default, also saves the file info to determine whether the cache is valid, or whether the contents need to be updated because the files have been modified.
-To skip this, or force reading from scratch, use \code{with_cache}, \code{force_cache} directly,
-or set \code{skip_file_info=TRUE} or \code{force=TRUE}, respectively.
+To skip this, or force reading from scratch, set \code{skip_file_info=TRUE} or \code{force=TRUE}, respectively.
 
 If updating is called for, all the files are re-read.
 
-\code{cached_read_csv} is a convenience function using \code{readr::read_csv} if \code{readr} is installed
-(typically through the \code{tidyverse}), or \code{utils::read.csv} otherwise.
+\code{cached_read_csv()} is a convenience function using a csv read function based on \code{read_type}.
 }
 \seealso{
 \code{\link[=vectorize_reader]{vectorize_reader()}} to convert a single-input read function into a multiple-input function.
+
+\code{\link[=vectorize_reader]{vectorize_reader()}}
 }

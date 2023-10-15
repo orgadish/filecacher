@@ -2,45 +2,39 @@
 % Please edit documentation in R/vectorize_reader.R
 \name{vectorize_reader}
 \alias{vectorize_reader}
-\title{Vectorize a single-input read function to read multiple files at once.}
+\title{Vectorize a single-input read function to read multiple files}
 \usage{
-vectorize_reader(read_fn, bind_fn = NULL, ...)
+vectorize_reader(read_fn, file_path = NULL)
 }
 \arguments{
-\item{read_fn}{The read function to vectorize.}
+\item{read_fn}{The read function to vectorize. The first argument must be the files to read.}
 
-\item{bind_fn}{The function used to bind the results together.
-If NULL (default) uses \code{dplyr::bind_rows}, if installed, or \code{rbind}.}
-
-\item{...}{Arguments to \code{bind_fn}. For example, \code{dplyr::bind_rows} has a useful \code{.id} argument.}
+\item{file_path}{A string, which if provided, is the name of the column containing
+containing the file paths in the result.}
 }
 \value{
-A single data.frame or data.frame-like object.
+A version of \code{read_fn} that can read multiple paths.
 }
 \description{
-Uses \code{dplyr::bind_rows} to bind the data frames, if installed. If not, uses \code{base::rbind}.
-Note that these behave slightly differently:
-\itemize{
-\item \code{base::rbind} requires the data frames to have the same columns.
-\item \code{dplyr::bind_rows} generates a data frame with all the columns, filling NA where data was not present.
-}
+The resulting vectorized read function still takes all the arguments of the
+original function.
+
+Uses \code{purrr::list_rbind()} to bind the data frames. Unlike \code{base::rbind()},
+\code{purrr::list_rbind()} generates a data frame with a supserset of the columns
+from all the files, filling \code{NA} where data was not present.
 }
 \examples{
 \dontrun{
 
-paths <- list.files(DIR, full.names=TRUE, pattern="[.]csv$")
+paths <- list.files(DIR, full.names = TRUE, pattern = "[.]csv$")
 
-paths |>
-  vectorize_reader(read.csv)()
+vectorize_reader(read.csv)(paths, sep = ";")
 
-paths |>
-  vectorize_reader(arrow::read_csv_arrow)()
+vectorize_reader(arrow::read_csv_arrow)(paths, col_names = FALSE)
 
-paths |>
-  vectorize_reader(data.table::fread)()
-
+vectorize_reader(data.table::fread)(paths)
 }
 }
 \seealso{
-\code{\link[dplyr:bind_rows]{dplyr::bind_rows()}}
+\code{\link[purrr:list_c]{purrr::list_rbind()}}
 }

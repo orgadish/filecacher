@@ -1,7 +1,7 @@
 Package: filecacher
 Type: Package
 Title: Cached Read
-Version: 0.2.0
+Version: 0.2.1
 Author: Or Gadish
 Maintainer: Or Gadish <orgadish@gmail.com>
 Description: 
@@ -17,7 +17,9 @@ Imports:
     assertthat,
     cachem,
     glue,
-    here
+    here,
+    purrr,
+    stats
 RoxygenNote: 7.2.3
 Suggests: 
     arrow,

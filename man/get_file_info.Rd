@@ -2,7 +2,7 @@
 % Please edit documentation in R/util-get_file_info.R
 \name{get_file_info}
 \alias{get_file_info}
-\title{Get information from file.info that is expected to stay the same if the contents aren't modified.}
+\title{Extract File Information to Indicate if Contents Are Modified.}
 \usage{
 get_file_info(path)
 }
@@ -10,5 +10,5 @@ get_file_info(path)
 \item{path}{A character vector of one or more paths.}
 }
 \description{
-For example, excludes access_time, which changes even if the contents are the same.
+Uses \code{file.info()} to get \code{size} and \code{mtime}.
 }

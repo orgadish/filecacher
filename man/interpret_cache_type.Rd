@@ -4,12 +4,14 @@
 \alias{interpret_cache_type}
 \title{Generate cache parameters from pre-existing shorthand types.}
 \usage{
-interpret_cache_type(type)
+interpret_cache_type(type, ext_prefix = TRUE)
 }
 \arguments{
 \item{type}{A string describing the type of cache.
 Must be NULL or one of 'rds', 'parquet', or 'csv'.
 If NULL (default), uses 'rds'.}
+
+\item{ext_prefix}{Whether to add "cache_" before the file extension.}
 }
 \value{
 List of read_fn, write_fn, and extension for use with \code{cachem::cache_disk}.

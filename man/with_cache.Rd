@@ -7,15 +7,17 @@
 with_cache(x, label, cache = NULL, type = NULL, force = FALSE)
 }
 \arguments{
-\item{x}{The object to store in the cache. Must be compatible with the cache type.}
+\item{x}{The object to store in the cache. Must be compatible
+with the cache type.}
 
 \item{label}{A string to use as the name of the file to cache.}
 
-\item{cache}{An existing cachem object or a path to an existing directory to use for caching.}
+\item{cache}{An existing \code{cachem} object or a path to an existing directory
+to use for caching.}
 
 \item{type}{A string describing the type of cache.
-Must be NULL or one of 'rds', 'parquet', or 'csv'.
-If NULL (default), uses 'rds'.}
+Must be \code{NULL} or one of 'rds', 'parquet', or 'csv'.
+If \code{NULL} (default), uses 'rds'.}
 
 \item{force}{If \code{TRUE}, forces evaluation even if the cache exists.}
 }
@@ -26,8 +28,10 @@ The value of \code{x}.
 If the cache exists, the object is retrieved from the cache.
 Otherwise, it is evaluated and stored for subsequent retrieval.
 
-Use \code{force=TRUE} to ensure the object is evaluated and stored anew in the cache.
+Use \code{force=TRUE} to ensure the object is evaluated and stored
+anew in the cache.
 
 The object evaluated must be compatible with the cache type.
-For example, a cache type of 'csv' or 'parquet' requires a \code{data.frame} or similar type.
+For example, a cache type of 'csv' or 'parquet' requires a
+\code{data.frame} or similar type.
 }

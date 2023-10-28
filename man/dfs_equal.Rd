@@ -2,7 +2,7 @@
 % Please edit documentation in R/util-dfs_equal.R
 \name{dfs_equal}
 \alias{dfs_equal}
-\title{Compare two dfs (ignoring row order) and ensure they are equal.}
+\title{Compare two data frames (ignoring row order) and ensure they are equal.}
 \usage{
 dfs_equal(target, current)
 }
@@ -12,7 +12,9 @@ dfs_equal(target, current)
 \item{current}{other \R object, to be compared with \code{target}.}
 }
 \description{
-Similar to \code{dplyr::all_equal(x, y, ignore_row_order=TRUE)}, which is now deprecated.
+Similar to \code{dplyr::all_equal(x, y, ignore_row_order=TRUE)},
+which is now deprecated.
 
-If either argument is not a data.frame it returns FALSE, rather than
+If either argument is not a data.frame it returns \code{FALSE},
+rather than raise an error.
 }

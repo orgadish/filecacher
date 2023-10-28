@@ -30,45 +30,49 @@ cached_read_csv(
 
 \item{label}{A string to use as the name of the file to cache.}
 
-\item{read_fn}{A function which takes file(s) as its first parameter and reads them.
-To use a single-input read function such as \code{arrow::read_csv_arrow()} with multiple files,
-use \code{vectorize_reader()}, e.g. \code{read_fn=vectorize_reader(arrow::read_csv_arrow)}.}
+\item{read_fn}{A function which takes file(s) as its first parameter and
+reads them. To use a single-input read function such as
+\code{arrow::read_csv_arrow()} with multiple files, use \code{\link[=vectorize_reader]{vectorize_reader()}},
+e.g. \code{read_fn=vectorize_reader(arrow::read_csv_arrow)}.}
 
-\item{cache}{An existing cachem object or a path to an existing directory to use for caching.}
+\item{cache}{An existing \code{cachem} object or a path to an existing directory
+to use for caching.}
 
 \item{type}{A string describing the type of cache.
-Must be NULL or one of 'rds', 'parquet', or 'csv'.
-If NULL (default), uses 'rds'.}
+Must be \code{NULL} or one of 'rds', 'parquet', or 'csv'.
+If \code{NULL} (default), uses 'rds'.}
 
 \item{skip_file_info}{Whether to skip saving and/or checking the file info.
-Use this when even querying the filesystem (without opening files) is slow.}
+Use this when just querying the file system (without opening files) is slow.}
 
 \item{force}{If \code{TRUE}, forces evaluation even if the cache exists.}
 
 \item{read_type}{Type of csv read function to use. One of:
 \itemize{
-\item 'readr': \code{readr::read_csv}
-\item 'data.table': \code{vectorize_reader(data.table::fread)}
-\item 'arrow': \code{vectorize_reader(arrow::read_csv_arrow)}
-\item 'base': \code{vectorize_reader(utils::read.csv)}
-\item \code{NULL} (default): uses the first installed
+\item "readr": \code{readr::read_csv()}
+\item "arrow": \code{vectorize_reader(arrow::read_csv_arrow)()}
+\item "data.table": \code{vectorize_reader(data.table::fread)()}
+\item "base": \code{vectorize_reader(utils::read.csv)()}
+\item \code{NULL} (default): uses the first installed.
 }}
 }
 \value{
-The result of \code{read_fn(files, ...)}.
+The result of \code{read_fn(files)}.
 }
 \description{
 Reads data and save to a local  file for easier management and re-reading.
 
-By default, also saves the file info to determine whether the cache is valid, or whether the contents need to be updated because the files have been modified.
-To skip this, or force reading from scratch, set \code{skip_file_info=TRUE} or \code{force=TRUE}, respectively.
+By default, also saves the file info to determine whether the cache
+is valid, or whether the contents need to be updated because the files
+have been modified. To skip this, or force reading from scratch, set
+\code{skip_file_info=TRUE} or \code{force=TRUE}, respectively.
 
 If updating is called for, all the files are re-read.
 
-\code{cached_read_csv()} is a convenience function using a csv read function based on \code{read_type}.
+\code{cached_read_csv()} is a convenience function using a csv read function
+based on \code{read_type}.
 }
 \seealso{
-\code{\link[=vectorize_reader]{vectorize_reader()}} to convert a single-input read function into a multiple-input function.
-
-\code{\link[=vectorize_reader]{vectorize_reader()}}
+\code{\link[=vectorize_reader]{vectorize_reader()}} to convert a single-input read function into a
+multiple-input function.
 }

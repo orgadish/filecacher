@@ -1,9 +1,11 @@
-#' Compare two dfs (ignoring row order) and ensure they are equal.
+#' Compare two data frames (ignoring row order) and ensure they are equal.
 #'
 #' @description
-#' Similar to `dplyr::all_equal(x, y, ignore_row_order=TRUE)`, which is now deprecated.
+#' Similar to `dplyr::all_equal(x, y, ignore_row_order=TRUE)`,
+#' which is now deprecated.
 #'
-#' If either argument is not a data.frame it returns FALSE, rather than
+#' If either argument is not a data.frame it returns `FALSE`,
+#' rather than raise an error.
 #'
 #' @inheritParams base::all.equal
 dfs_equal <- function(target, current) {
@@ -11,7 +13,7 @@ dfs_equal <- function(target, current) {
     return(FALSE)
   }
 
-  df_sort <- function(df) df[do.call(order, df), , drop = F]
+  df_sort <- function(df) df[do.call(order, df), , drop = FALSE]
 
   setequal(
     df_sort(target),

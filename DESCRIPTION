@@ -1,25 +1,28 @@
 Package: filecacher
 Type: Package
-Title: Cached Read
-Version: 0.2.1
+Title: File Cacher
+Version: 0.2.2
 Author: Or Gadish
 Maintainer: Or Gadish <orgadish@gmail.com>
 Description: 
-    The main functions in this package are `with_cache` and `cached_read`. The former is a simple way to cache
-    an R object into a file on disk, using `cachem`. The latter is a wrapper around any standard read function, 
-    but caches both the output *and* the file list info. If the input file list info hasn't changed, the cache is used;
-    otherwise, the original files are re-read. This can save time if the original operation requires
-    reading from many files, and/or involves lots of processing.
+    The main functions in this package are `with_cache()` and `cached_read()`. 
+    The former is a simple way to cache an R object into a file on disk, 
+    using `cachem`. The latter is a wrapper around any standard read function, 
+    but caches both the output *and* the file list info. If the input file list
+    info hasn't changed, the cache is used; otherwise, the original files are
+    re-read. This can save time if the original operation requires reading from
+    many files, and/or involves lots of processing.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: 
-    assertthat,
     cachem,
     glue,
     here,
     purrr,
-    stats
+    rlang,
+    stats,
+    vctrs
 RoxygenNote: 7.2.3
 Suggests: 
     arrow,
@@ -28,6 +31,5 @@ Suggests:
     fs,
     readr,
     testthat (>= 3.0.0),
-    tibble
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)

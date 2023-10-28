@@ -4,14 +4,15 @@
 #' The resulting vectorized read function still takes all the arguments of the
 #' original function.
 #'
-#' Uses `purrr::list_rbind()` to bind the data frames. Unlike `base::rbind()`,
-#' `purrr::list_rbind()` generates a data frame with a supserset of the columns
-#' from all the files, filling `NA` where data was not present.
+#' Uses [purrr::list_rbind()] to bind the data frames, which generates
+#' a data frame with a superset of the columns from all the files,
+#' filling `NA` where data was not present.
 #'
-#'
-#' @param read_fn The read function to vectorize. The first argument must be the files to read.
-#' @param file_path A string, which if provided, is the name of the column containing
-#'   containing the file paths in the result.
+#' @param read_fn The read function to vectorize. The first argument must be the
+#'   files to read.
+#' @param file_path_to A string, which if provided, is the name of the column
+#'   containing the file paths in the result. See 'names_to' in
+#'   [purrr::list_rbind()].
 #'
 #' @seealso [purrr::list_rbind()]
 #'
@@ -21,21 +22,17 @@
 #' @examples
 #' \dontrun{
 #'
-#' paths <- list.files(DIR, full.names = TRUE, pattern = "[.]csv$")
+#' vectorize_reader(read.csv)(multiple_paths, sep = ";")
 #'
-#' vectorize_reader(read.csv)(paths, sep = ";")
+#' vectorize_reader(arrow::read_csv_arrow)(multiple_paths, col_names = FALSE)
 #'
-#' vectorize_reader(arrow::read_csv_arrow)(paths, col_names = FALSE)
-#'
-#' vectorize_reader(data.table::fread)(paths)
+#' vectorize_reader(data.table::fread)(multiple_paths)
 #' }
-vectorize_reader <- function(read_fn, file_path = NULL) {
+vectorize_reader <- function(read_fn, file_path_to = NULL) {
   function(files, ...) {
-    df_list <- lapply(stats::setNames(nm = files), read_fn, ...)
-    if(is.null(file_path)) {
-      return(purrr::list_rbind(df_list))
-    } else {
-      return(purrr::list_rbind(df_list, names_to = file_path))
-    }
+    df_list <- purrr::map(stats::setNames(nm = files), read_fn, ...)
+    if (is.null(file_path_to)) file_path_to <- rlang::zap()
+
+    purrr::list_rbind(df_list, names_to = file_path_to)
   }
 }

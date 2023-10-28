@@ -9,8 +9,9 @@ get_file_info <- function(path) {
   all_file_info <- file.info(path, extra_cols = FALSE)
   all_file_info$path <- path
 
-  # Only keep headings from `file.info()` that are expected to stay the same if the contents aren't modified.
-  # For example, last access time (`atime`) should be ignored, but modified time (`mtime`) should be kept.
+  # Only keep headings from `file.info()` that are expected to stay the same
+  # if the contents aren't modified. For example, last access time (`atime`)
+  # should be ignored, but modified time (`mtime`) should be kept.
   cols_to_keep <- c("path", "size", "mtime")
   subset_file_info <- all_file_info[, cols_to_keep]
 

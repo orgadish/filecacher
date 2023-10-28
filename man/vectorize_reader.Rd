@@ -4,13 +4,15 @@
 \alias{vectorize_reader}
 \title{Vectorize a single-input read function to read multiple files}
 \usage{
-vectorize_reader(read_fn, file_path = NULL)
+vectorize_reader(read_fn, file_path_to = NULL)
 }
 \arguments{
-\item{read_fn}{The read function to vectorize. The first argument must be the files to read.}
+\item{read_fn}{The read function to vectorize. The first argument must be the
+files to read.}
 
-\item{file_path}{A string, which if provided, is the name of the column containing
-containing the file paths in the result.}
+\item{file_path_to}{A string, which if provided, is the name of the column
+containing the file paths in the result. See 'names_to' in
+\code{\link[purrr:list_c]{purrr::list_rbind()}}.}
 }
 \value{
 A version of \code{read_fn} that can read multiple paths.
@@ -19,20 +21,18 @@ A version of \code{read_fn} that can read multiple paths.
 The resulting vectorized read function still takes all the arguments of the
 original function.
 
-Uses \code{purrr::list_rbind()} to bind the data frames. Unlike \code{base::rbind()},
-\code{purrr::list_rbind()} generates a data frame with a supserset of the columns
-from all the files, filling \code{NA} where data was not present.
+Uses \code{\link[purrr:list_c]{purrr::list_rbind()}} to bind the data frames, which generates
+a data frame with a superset of the columns from all the files,
+filling \code{NA} where data was not present.
 }
 \examples{
 \dontrun{
 
-paths <- list.files(DIR, full.names = TRUE, pattern = "[.]csv$")
+vectorize_reader(read.csv)(multiple_paths, sep = ";")
 
-vectorize_reader(read.csv)(paths, sep = ";")
+vectorize_reader(arrow::read_csv_arrow)(multiple_paths, col_names = FALSE)
 
-vectorize_reader(arrow::read_csv_arrow)(paths, col_names = FALSE)
-
-vectorize_reader(data.table::fread)(paths)
+vectorize_reader(data.table::fread)(multiple_paths)
 }
 }
 \seealso{

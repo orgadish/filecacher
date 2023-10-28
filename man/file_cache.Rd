@@ -2,22 +2,27 @@
 % Please edit documentation in R/file_cache.R
 \name{file_cache}
 \alias{file_cache}
-\title{Gets or creates a cachem object for use with other functions.}
+\title{Gets or creates a \code{cachem} object for use with other functions.}
 \usage{
 file_cache(cache = NULL, type = NULL, ext_prefix = TRUE)
 }
 \arguments{
-\item{cache}{An existing cachem object or a path to an existing directory to use for caching.}
+\item{cache}{An existing \code{cachem} object or a path to an existing directory
+to use for caching.}
 
 \item{type}{A string describing the type of cache.
-Must be NULL or one of 'rds', 'parquet', or 'csv'.
-If NULL (default), uses 'rds'.}
+Must be \code{NULL} or one of 'rds', 'parquet', or 'csv'.
+If \code{NULL} (default), uses 'rds'.}
 
 \item{ext_prefix}{Whether to add "cache_" before the file extension.}
 }
 \value{
-Either the \code{cachem} object provided, or a new \code{cachem::cache_disk()} object.
+Either the \code{cachem} object provided, or a new \code{\link[cachem:cache_disk]{cachem::cache_disk()}}
+object.
 }
 \description{
-Gets or creates a cachem object for use with other functions.
+Gets or creates a \code{cachem} object for use with other functions.
+}
+\seealso{
+\code{\link[cachem:cache_disk]{cachem::cache_disk()}}
 }

@@ -48,22 +48,22 @@ something_that_takes_a_while <- function(x) {
   return(x)
 }
 
-# Example standard pipeline without caching: 
+# Example standard pipeline without caching:
 #   1. Read using a vectorized `read.csv`.
 #   2. Perform some custom processing that takes a while (currently using sleep as an example).
-normal_pipeline <- function(files, ...) {  # Use ... to silently take cache_dir below.
-  files |> 
-    filecacher::vectorize_reader(read.csv)() |> 
+normal_pipeline <- function(files, ...) { # Use ... to silently take cache_dir below.
+  files |>
+    filecacher::vectorize_reader(read.csv)() |>
     suppressMessages() |>
     something_that_takes_a_while()
 }
 
 # Same pipeline, using `cached_read` which caches the contents and the file info for checking later:
 pipeline_using_cached_read <- function(files, cache_dir) {
-  files |> 
+  files |>
     filecacher::cached_read(
       label = "processed_data_using_cached_read",
-      read_fn = normal_pipeline, 
+      read_fn = normal_pipeline,
       cache = cache_dir,
       type = "parquet"
     )
@@ -72,7 +72,7 @@ pipeline_using_cached_read <- function(files, cache_dir) {
 # Alternate syntax, with `with_cache`. Using `with_cache` only checks that the cache file
 # exists, without any information about the file list.
 pipeline_using_with_cache <- function(files, cache_dir) {
-  normal_pipeline(files) |> 
+  normal_pipeline(files) |>
     filecacher::with_cache(
       label = "processed_data_using_with_cache",
       cache = cache_dir,
@@ -84,14 +84,14 @@ pipeline_using_with_cache <- function(files, cache_dir) {
 time_pipeline <- function(pipeline_fn) {
   function_name <- as.character(match.call()[2])
   print(function_name)
-  
+
   # Create a separate directory for the cache for this function.
   cache_dir <- file.path(TEMP_DIR, paste0("temp_", function_name))
   dir.create(cache_dir)
-  
+
   gc()
-  
-  for(i in 1:3) {
+
+  for (i in 1:3) {
     print(system.time(pipeline_fn(IRIS_FILES_BY_SPECIES, cache_dir)))
   }
 }
@@ -99,30 +99,29 @@ time_pipeline <- function(pipeline_fn) {
 time_pipeline(normal_pipeline)
 #> [1] "normal_pipeline"
 #>    user  system elapsed 
-#>   0.048   0.009   0.571 
+#>   0.046   0.008   0.567 
 #>    user  system elapsed 
-#>   0.002   0.000   0.504 
+#>   0.003   0.001   0.505 
 #>    user  system elapsed 
-#>   0.003   0.001   0.506
+#>   0.003   0.000   0.504
 time_pipeline(pipeline_using_cached_read)
 #> [1] "pipeline_using_cached_read"
 #>    user  system elapsed 
-#>   0.481   0.046   1.072 
+#>   0.564   0.047   1.150 
 #>    user  system elapsed 
-#>   0.025   0.002   0.025 
+#>   0.026   0.002   0.027 
 #>    user  system elapsed 
-#>   0.009   0.001   0.009
+#>   0.009   0.002   0.010
 time_pipeline(pipeline_using_with_cache)
 #> [1] "pipeline_using_with_cache"
 #>    user  system elapsed 
-#>   0.008   0.001   0.511 
+#>   0.008   0.002   0.511 
 #>    user  system elapsed 
-#>   0.004   0.001   0.005 
+#>   0.005   0.001   0.005 
 #>    user  system elapsed 
-#>   0.005   0.001   0.005
+#>   0.006   0.001   0.005
 
 
 # Delete the temporary directory created to run these examples.
 unlink(TEMP_DIR, recursive = TRUE)
-  
 ```

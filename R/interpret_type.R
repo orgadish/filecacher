@@ -42,7 +42,8 @@ get_csv_fns <- function(type = NULL) {
     fn_list <- rw_fns[[type]]
   } else {
     collapsed_names <- glue::glue_collapse(
-      glue::glue("'{names(rw_fns)}'"), sep = ", ", last = ", or "
+      glue::glue("'{names(rw_fns)}'"),
+      sep = ", ", last = ", or "
     )
     stop(glue::glue(
       "`type` must be NULL or one of {collapsed_names}, not '{type}'."

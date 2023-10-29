@@ -25,17 +25,17 @@ with_cache <- function(x, label, cache = NULL, type = NULL, force = FALSE) {
 
   if (!force && .cache$exists(label)) {
     return(.cache$get(label))
-  } else {
-    out <- x # Call separately from $set to report errors correctly.
-    tryCatch(
-      .cache$set(label, out),
-      error = \(e) {
-        stop(glue::glue(
-          "{e} Check if the cache type ('{type}') is compatible ",
-          "with the data being stored."
-        ))
-      }
-    )
-    return(out)
   }
+
+  out <- x # Call separately from $set to report errors correctly.
+  tryCatch(
+    .cache$set(label, out),
+    error = \(e) {
+      stop(glue::glue(
+        "{e} Check if the cache type ('{type}') is compatible ",
+        "with the data being stored."
+      ))
+    }
+  )
+  out
 }

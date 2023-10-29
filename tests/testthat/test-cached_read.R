@@ -63,7 +63,12 @@ expect_cache_file_info <- function(dir_path, exists, ext = CACHE_EXT) {
 
 # Expect Equal DFs
 expect_equal_dfs <- function(x, y) {
-  expect_true(dfs_equal(x, y))
+  xn <- names(x)
+  yn <- names(y)
+
+  expect_equal(length(xn), length(yn))
+  expect_equal(xn, yn)
+  expect_setequal(unname(data.frame(x)), unname(data.frame(y)))
 }
 
 # Tests -------------------------------------------------------------------
@@ -117,7 +122,11 @@ expect_skip_file_info_works <- function(cache_ext, type = NULL, ...) {
       skip_file_info = TRUE,
       type = type,
       ...
-    )
+    ) |>
+      # Ignore `file_path` which is added with type='csv'.
+      dplyr::select(
+        -dplyr::matches("file_path")
+      )
 
     expect_equal_dfs(res, iris_complete)
 
@@ -138,7 +147,7 @@ test_that("cached_read with skip_file_info and type='parquet' works", {
   expect_skip_file_info_works("cache_parquet", type = "parquet")
 })
 
-test_that("cached_read with check='exists' and type='csv' works correctly", {
+test_that("cached_read with skip_file_info and type='csv' works correctly", {
   expect_skip_file_info_works("cache_csv", type = "csv")
 })
 

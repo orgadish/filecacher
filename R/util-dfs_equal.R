@@ -15,8 +15,15 @@ dfs_equal <- function(target, current) {
 
   df_sort <- function(df) df[do.call(order, df), , drop = FALSE]
 
-  setequal(
-    df_sort(target),
-    df_sort(current)
+  target_df <- df_sort(target)
+  current_df <- df_sort(current)
+
+  target_names <- names(target_df)
+  current_names <- names(current_df)
+
+  (
+    length(target_names) == length(current_names) &&
+      all(target_names == current_names) &&
+      setequal(target_df, current_df)
   )
 }

@@ -19,20 +19,12 @@
 #' @return A version of `read_fn` that can read multiple paths.
 #'
 #' @export
-#' @examples
-#' \dontrun{
-#'
-#' vectorize_reader(read.csv)(multiple_paths, sep = ";")
-#'
-#' vectorize_reader(arrow::read_csv_arrow)(multiple_paths, col_names = FALSE)
-#'
-#' vectorize_reader(data.table::fread)(multiple_paths)
-#' }
+#' @example inst/examples/vectorize_reader.R
 vectorize_reader <- function(read_fn, file_path_to = NULL) {
   function(files, ...) {
     df_list <- purrr::map(stats::setNames(nm = files), read_fn, ...)
-    if (is.null(file_path_to)) file_path_to <- rlang::zap()
 
+    if (is.null(file_path_to)) file_path_to <- rlang::zap()
     purrr::list_rbind(df_list, names_to = file_path_to)
   }
 }

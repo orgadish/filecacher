@@ -1,13 +1,13 @@
 Package: filecacher
 Type: Package
 Title: File Cacher
-Version: 0.2.2
+Version: 0.2.3
 Authors@R:
     person("Or", "Gadish", email = "orgadish@gmail.com", role = c("aut", "cre", "cph"))
 Description: 
     The main functions in this package are with_cache() and cached_read(). 
     The former is a simple way to cache an R object into a file on disk, 
-    using cachem. The latter is a wrapper around any standard read function, 
+    using 'cachem'. The latter is a wrapper around any standard read function, 
     but caches both the output and the file list info. If the input file list
     info hasn't changed, the cache is used; otherwise, the original files are
     re-read. This can save time if the original operation requires reading from

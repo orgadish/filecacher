@@ -76,11 +76,12 @@ get_csv_read_fn <- function(read_type = NULL) {
 #' @param type A string describing the type of cache.
 #'   Must be `NULL` or one of 'rds', 'parquet', or 'csv'.
 #'   If `NULL` (default), uses 'rds'.
-#' @param ext_prefix Whether to add "cache_" before the file extension.
+#' @param ext_prefix The prefix to use with the file extension,
+#'   e.g. "cache_csv", instead of "csv".
 #'
 #' @return List of `read_fn`, `write_fn`, and `extension` for use with
-#'   `cachem::cache_disk`.
-interpret_cache_type <- function(type, ext_prefix = TRUE) {
+#'   [cachem::cache_disk()].
+interpret_cache_type <- function(type, ext_prefix = "cache_") {
   if (is.null(type)) {
     type <- "rds"
   } else {
@@ -94,7 +95,7 @@ interpret_cache_type <- function(type, ext_prefix = TRUE) {
 
 
   build_ext <- function(ext) {
-    paste0(".", if (ext_prefix) "cache_", ext)
+    paste0(".", ext_prefix, ext)
   }
 
   csv_fn_list <- get_csv_fns()

@@ -9,5 +9,8 @@ fns_equal <- function(x, y) {
     stop("`x` and `y` must be functions.")
   }
 
-  deparse(x, nlines = 1) == deparse(y, nlines = 1)
+  # Replacement for `base::deparse1`, which is only available in R >= 4.0.0.
+  deparse_1 <- function(z) paste(deparse(z), collapse = " ")
+
+  deparse_1(x) == deparse_1(y)
 }

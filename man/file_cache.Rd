@@ -4,24 +4,60 @@
 \alias{file_cache}
 \title{Gets or creates a \code{cachem} object for use with other functions.}
 \usage{
-file_cache(cache = NULL, type = NULL, ext_prefix = TRUE)
+file_cache(cache = NULL, type = NULL, ext_prefix = "cache_")
 }
 \arguments{
-\item{cache}{An existing \code{cachem} object or a path to an existing directory
-to use for caching.}
+\item{cache}{The path to an existing directory to use for caching.
+If \code{NULL} (default) uses the current path, using \code{\link[here:here]{here::here()}}.
+
+For advanced use, also accepts (and passes on) an existing
+\code{cachem} object. If so, all other parameters are ignored.}
 
 \item{type}{A string describing the type of cache.
 Must be \code{NULL} or one of 'rds', 'parquet', or 'csv'.
 If \code{NULL} (default), uses 'rds'.}
 
-\item{ext_prefix}{Whether to add "cache_" before the file extension.}
+\item{ext_prefix}{The prefix to use with the file extension,
+e.g. "cache_csv", instead of "csv".}
 }
 \value{
-Either the \code{cachem} object provided, or a new \code{\link[cachem:cache_disk]{cachem::cache_disk()}}
-object.
+A \code{\link[cachem:cache_disk]{cachem::cache_disk()}} object.
 }
 \description{
 Gets or creates a \code{cachem} object for use with other functions.
+}
+\examples{
+# Create a temporary directory for the examples.
+tf <- tempfile()
+dir.create(tf)
+
+# A function that logs when it's called.
+get_df <- function() {
+  message("Getting df ...")
+  return(mtcars)
+}
+
+# Use the resulting object in `with_cache()`.
+# 1) The first time, the message is printed.
+# 2) The second time, the object is pulled from the cache, with no message.
+all.equal(with_cache(get_df(), "df", cache = tf), mtcars)
+all.equal(with_cache(get_df(), "df", cache = tf), mtcars)
+
+# `with_cache` is designed to be compatible with piping.
+get_df() |>
+  with_cache("df", cache = tf) |>
+  all.equal(mtcars)
+
+
+# Advanced: If desired, the `cachem` object methods can be used directly.
+cache <- file_cache(tf)
+cache$get("df") |> # Get objects previously cached using `with_cache`.
+  all.equal(mtcars)
+cache$set("df2", mtcars) # Set objects using `$set`.
+cache$get("df2") |>
+  all.equal(mtcars)
+
+unlink(tf)
 }
 \seealso{
 \code{\link[cachem:cache_disk]{cachem::cache_disk()}}

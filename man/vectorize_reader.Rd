@@ -26,14 +26,30 @@ a data frame with a superset of the columns from all the files,
 filling \code{NA} where data was not present.
 }
 \examples{
-\dontrun{
+# Create multiple temporary paths to read.
+tf <- tempfile()
+dir.create(tf)
 
-vectorize_reader(read.csv)(multiple_paths, sep = ";")
+write.csv(mtcars, file.path(tf, "mtcars1.csv"))
+write.csv(mtcars, file.path(tf, "mtcars2.csv"))
+multiple_paths <- list.files(tf, full.names = TRUE)
 
-vectorize_reader(arrow::read_csv_arrow)(multiple_paths, col_names = FALSE)
+try(read.csv(multiple_paths))
+vectorize_reader(read.csv)(
+  multiple_paths, header = FALSE
+) |> dim()
 
-vectorize_reader(data.table::fread)(multiple_paths)
-}
+try(arrow::read_csv_arrow(multiple_paths))
+vectorize_reader(arrow::read_csv_arrow)(
+  multiple_paths, col_names = FALSE
+) |> dim()
+
+try(data.table::fread(multiple_paths))
+vectorize_reader(data.table::fread)(
+  multiple_paths, header = FALSE
+) |> dim()
+
+unlink(tf)
 }
 \seealso{
 \code{\link[purrr:list_c]{purrr::list_rbind()}}

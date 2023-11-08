@@ -16,6 +16,19 @@ test_that("interpret_cache_type extension works", {
   expect_equal(interpret_cache_type("rds")$extension, ".cache_rds")
   expect_equal(interpret_cache_type("parquet")$extension, ".cache_parquet")
   expect_equal(interpret_cache_type("csv")$extension, ".cache_csv")
+
+  expect_equal(
+    interpret_cache_type("rds", ext_prefix = NULL)$extension,
+    ".rds"
+  )
+  expect_equal(
+    interpret_cache_type("parquet", ext_prefix = "")$extension,
+    ".parquet"
+  )
+  expect_equal(
+    interpret_cache_type("csv", ext_prefix = character())$extension,
+    ".csv"
+  )
 })
 
 expect_fns_equal <- function(x, y) {

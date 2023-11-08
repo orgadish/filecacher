@@ -1,7 +1,7 @@
 #' Read files via cache of file list and contents
 #'
 #' @description
-#' Reads data and save to a local  file for easier management and re-reading.
+#' Reads data and save to a local file for easier management and re-reading.
 #'
 #' By default, also saves the file info to determine whether the cache
 #' is valid, or whether the contents need to be updated because the files
@@ -17,7 +17,7 @@
 #' @param read_fn A function which takes file(s) as its first parameter and
 #'   reads them. To use a single-input read function such as
 #'   `arrow::read_csv_arrow()` with multiple files, use [vectorize_reader()],
-#'   e.g. `read_fn=vectorize_reader(arrow::read_csv_arrow)`.
+#'   e.g. `read_fn = vectorize_reader(arrow::read_csv_arrow)`.
 #' @param skip_file_info Whether to skip saving and/or checking the file info.
 #'  Use this when just querying the file system (without opening files) is slow.
 #' @inheritParams with_cache
@@ -27,9 +27,10 @@
 #'
 #' @return The result of `read_fn(files)`.
 #' @export
+#' @example inst/examples/cached_read.R
 cached_read <- function(files, label, read_fn,
-                        cache = NULL, type = NULL,
-                        skip_file_info = FALSE, force = FALSE) {
+                        cache = NULL, type = NULL, force = FALSE,
+                        skip_file_info = FALSE) {
   .cache <- file_cache(cache = cache, type = type)
 
   read_with_cache <- function() {

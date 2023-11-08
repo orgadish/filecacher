@@ -37,10 +37,10 @@ test_that("file_cache with type=parquet works", {
   unlink(tf)
 })
 
-test_that("file_cache with type=csv, ext_prefix=FALSE works", {
+test_that("file_cache with type=csv, ext_prefix=NULL works", {
   tf <- tempfile()
   dir.create(tf)
-  cache <- file_cache(tf, type = "csv", ext_prefix = FALSE)
+  cache <- file_cache(tf, type = "csv", ext_prefix = "")
 
   expect_true(inherits(cache, "cache_disk"))
 
@@ -50,6 +50,9 @@ test_that("file_cache with type=csv, ext_prefix=FALSE works", {
   unlink(tf)
 })
 
-test_that("file_cache warns if not cache_disk", {
-  expect_warning(file_cache(cache = cachem::cache_mem()))
+test_that("file_cache with cache_mem does not error", {
+  expect_no_error({
+    mem_cache <- file_cache(cache = cachem::cache_mem())
+  })
+  expect_true(inherits(mem_cache, "cache_mem"))
 })

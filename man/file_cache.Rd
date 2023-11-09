@@ -8,10 +8,14 @@ file_cache(cache = NULL, type = NULL, ext_prefix = "cache_")
 }
 \arguments{
 \item{cache}{The path to an existing directory to use for caching.
-If \code{NULL} (default) uses the current path, using \code{\link[here:here]{here::here()}}.
 
-For advanced use, also accepts (and passes on) an existing
-\code{cachem} object. If so, all other parameters are ignored.}
+If \code{NULL} (default) uses a folder called "cache" in the current
+path, using \code{\link[here:here]{here::here()}}. The folder is created if it does not
+already exist.
+
+\strong{Advanced:} if an existing \code{cachem} object is provided, all other
+parameters are ignored and the object is passed on as is. This
+functionality is primarily used internally or for testing.}
 
 \item{type}{A string describing the type of cache.
 Must be \code{NULL} or one of 'rds', 'parquet', or 'csv'.
@@ -57,7 +61,7 @@ cache$set("df2", mtcars) # Set objects using `$set`.
 cache$get("df2") |>
   all.equal(mtcars)
 
-unlink(tf)
+unlink(tf, recursive = TRUE)
 }
 \seealso{
 \code{\link[cachem:cache_disk]{cachem::cache_disk()}}

@@ -1,3 +1,12 @@
+# filecacher 0.2.4
+* Updated default behavior of `file_cache()`.
+
+## ── R CMD check results ──────────────────────── filecacher 0.2.4 ────
+Duration: 22.2s
+
+0 errors ✔ | 0 warnings ✔ | 0 notes ✔
+
+
 # filecacher 0.2.3
 CRAN Resubmission:
 * Updated LICENSE to use updated package name (filecacher)

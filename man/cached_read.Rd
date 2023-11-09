@@ -107,7 +107,7 @@ iris_files |>
   all.equal(iris)
 
 
-unlink(tf)
+unlink(tf, recursive = TRUE)
 }
 \seealso{
 \code{\link[=vectorize_reader]{vectorize_reader()}} to convert a single-input read function into a

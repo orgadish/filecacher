@@ -28,4 +28,4 @@ iris_files |>
   all.equal(iris)
 
 
-unlink(tf)
+unlink(tf, recursive = TRUE)

@@ -70,5 +70,5 @@ cache$set("df2", mtcars) # Set objects using `$set`.
 cache$get("df2") |>
   all.equal(mtcars)
 
-unlink(tf)
+unlink(tf, recursive = TRUE)
 }

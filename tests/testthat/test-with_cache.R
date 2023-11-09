@@ -20,5 +20,5 @@ test_that("with_cache works", {
   expect_equal(run_with_cache(), "CHANGED")
   expect_equal(run_with_cache(force = TRUE), "TEST")
 
-  unlink(tf)
+  unlink(tf, recursive = TRUE)
 })

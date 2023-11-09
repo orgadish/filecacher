@@ -1,6 +1,6 @@
 # filecacher 0.2.4
 
-* `file_cache()` now uses a subfolder "cache" rather than
+* `file_cache()` now uses a sub-folder "cache" rather than
   the top directory.
 
 

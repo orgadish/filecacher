@@ -24,7 +24,7 @@ file_cache <- function(cache = NULL, type = NULL, ext_prefix = "cache_") {
 
   if (is.null(cache)) {
     cache <- here::here("cache")
-    if(!dir.exists(cache)) dir.create(cache)
+    if (!dir.exists(cache)) dir.create(cache)
   } else if (!is.character(cache) || !dir.exists(cache)) {
     stop(
       "`cache` must be an existing cache or the path to an existing directory."

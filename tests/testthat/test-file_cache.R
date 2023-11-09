@@ -3,13 +3,15 @@ test_that("file_cache with cache=NULL", {
   dir_already_exists <- fs::dir_exists(expected_dir)
 
   .cache <- file_cache()
-  expect_equal(.cache$info()$dir, expected_dir)
+  expect_equal(
+    fs::path_abs(.cache$info()$dir),
+    expected_dir
+  )
 
-  if(!dir_already_exists) {
+  if (!dir_already_exists) {
     expect_true(fs::dir_exists(expected_dir))
     .cache$destroy()
   }
-
 })
 
 test_that("file_cache with type=NULL works", {

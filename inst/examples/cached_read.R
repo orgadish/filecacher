@@ -1,31 +1,31 @@
-# Create a temporary directory with "mtcars.csv".
+# Create a temporary directory for the cache.
 tf <- tempfile()
 dir.create(tf)
-mtcars_fp <- file.path(tf, "mtcars.csv")
-mtcars_wo_rownames <- `rownames<-`(mtcars, NULL)  # Ignore rownames.
-write.csv(mtcars_wo_rownames, mtcars_fp, row.names=FALSE)
-
 
 # A function that logs when it's called.
-read_csv_log <- function(fp) {
+read_csv_log <- function(files) {
   message("Reading from file ...")
-  return(vectorize_reader(read.csv)(fp))
+  return(vectorize_reader(read.csv)(files, stringsAsFactors = TRUE))
 }
 
-# 1) First time, message is printed
-mtcars_fp |>
-  cached_read("mtcars", read_csv_log, cache = tf) |>
-  all.equal(mtcars_wo_rownames)
+# `iris` data frame separated into multiple subset files.
+iris_files <- system.file("extdata", package = "filecacher") |>
+  list.files(pattern = "_only[.]csv$", full.names = TRUE)
 
-# 2) Second time, no message is printed as data is pulled from cache.
-mtcars_fp |>
+# 1) First time, the message is shown.
+iris_files |>
   cached_read("mtcars", read_csv_log, cache = tf) |>
-  all.equal(mtcars_wo_rownames)
+  all.equal(iris)
+
+# 2) Second time, no message is shown since the data is pulled from cache.
+iris_files |>
+  cached_read("mtcars", read_csv_log, cache = tf) |>
+  all.equal(iris)
 
 # 3) If desired, reloading can be forced using `force = TRUE`.
-mtcars_fp |>
+iris_files |>
   cached_read("mtcars", read_csv_log, cache = tf, force = TRUE) |>
-  all.equal(mtcars_wo_rownames)
+  all.equal(iris)
 
 
 unlink(tf)

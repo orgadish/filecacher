@@ -1,24 +1,33 @@
-# Create multiple temporary paths to read.
-tf <- tempfile()
-dir.create(tf)
+# Convert iris$Species to character to simplify comparison.
+iris_chr <- iris
+iris_chr$Species <- as.character(iris$Species)
 
-write.csv(mtcars, file.path(tf, "mtcars1.csv"))
-write.csv(mtcars, file.path(tf, "mtcars2.csv"))
-multiple_paths <- list.files(tf, full.names = TRUE)
 
-try(read.csv(multiple_paths))
+# `iris` data frame separated into multiple subset files.
+iris_files <- system.file("extdata", package = "filecacher") |>
+  list.files(pattern = "_only[.]csv$", full.names = TRUE)
+
+try(read.csv(iris_files))
 vectorize_reader(read.csv)(
-  multiple_paths, header = FALSE
-) |> dim()
+  iris_files,
+  stringsAsFactors = TRUE
+) |>
+  all.equal(iris)
 
-try(arrow::read_csv_arrow(multiple_paths))
+try(arrow::read_csv_arrow(iris_files))
 vectorize_reader(arrow::read_csv_arrow)(
-  multiple_paths, col_names = FALSE
-) |> dim()
+  iris_files
+) |>
+  as.data.frame() |>
+  all.equal(iris_chr)
 
-try(data.table::fread(multiple_paths))
+
+
+try(data.table::fread(iris_files))
 vectorize_reader(data.table::fread)(
-  multiple_paths, header = FALSE
-) |> dim()
+  iris_files,
+  stringsAsFactors = TRUE
+) |>
+  as.data.frame() |>
+  all.equal(iris)
 
-unlink(tf)

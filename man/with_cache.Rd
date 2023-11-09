@@ -40,11 +40,11 @@ For example, a cache type of 'csv' or 'parquet' requires a
 \code{data.frame} or similar type.
 }
 \examples{
-# Create a temporary directory for the examples.
+# Create a temporary directory for the cache.
 tf <- tempfile()
 dir.create(tf)
 
-# A function that logs when it's called.
+# A dummy function that logs when it's called.
 get_df <- function() {
   message("Getting df ...")
   return(mtcars)

@@ -27,11 +27,11 @@ A \code{\link[cachem:cache_disk]{cachem::cache_disk()}} object.
 Gets or creates a \code{cachem} object for use with other functions.
 }
 \examples{
-# Create a temporary directory for the examples.
+# Create a temporary directory for the cache.
 tf <- tempfile()
 dir.create(tf)
 
-# A function that logs when it's called.
+# A dummy function that logs when it's called.
 get_df <- function() {
   message("Getting df ...")
   return(mtcars)

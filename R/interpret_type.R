@@ -11,19 +11,19 @@ get_csv_fns <- function(type = NULL) {
   if (!is.null(type)) vctrs::vec_assert(type, character(), size = 1)
 
   rw_fns <- list(
-    "readr" = if (is_installed("readr")) {
+    "readr" = if (rlang::is_installed("readr")) {
       list(
         read = \(f) readr::read_csv(f, id = "file_path"),
         write = readr::write_csv
       )
     },
-    "arrow" = if (is_installed("arrow")) {
+    "arrow" = if (rlang::is_installed("arrow")) {
       list(
         read = vectorize_reader(arrow::read_csv_arrow, "file_path"),
         write = arrow::write_csv_arrow
       )
     },
-    "data.table" = if (is_installed("data.table")) {
+    "data.table" = if (rlang::is_installed("data.table")) {
       list(
         read = vectorize_reader(data.table::fread, "file_path"),
         write = data.table::fwrite
@@ -88,7 +88,7 @@ interpret_cache_type <- function(type, ext_prefix = "cache_") {
     vctrs::vec_assert(type, character(), size = 1)
   }
 
-  arrow_is_installed <- is_installed("arrow")
+  arrow_is_installed <- rlang::is_installed("arrow")
   if (type == "parquet" && !arrow_is_installed) {
     stop("The `arrow` package must be installed to use `type='parquet'`.")
   }

@@ -29,11 +29,19 @@ See examples below.
 
 ## Installation
 
-You can install the development version of `filecacher` like so:
+You can install the released version of `filecacher` from
+[CRAN](https://cran.r-project.org/package=filecacher) with:
 
-```{r install, eval=FALSE}
-# install.packages("devtools")
-devtools::install_github("orgadish/filecacher")
+``` r
+install.packages("filecacher")
+```
+
+And the development version from [GitHub](https://github.com/orgadish/filecacher):
+
+``` r
+if(!requireNamespace("remotes")) install.packages("remotes")
+
+remotes::install_github("orgadish/filecacher")
 ```
 
 ## Example

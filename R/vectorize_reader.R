@@ -1,6 +1,7 @@
 #' Vectorize a single-input read function to read multiple files
 #'
 #' @description
+#'
 #' The resulting vectorized read function still takes all the arguments of the
 #' original function.
 #'
@@ -22,7 +23,7 @@
 #' @example inst/examples/vectorize_reader.R
 vectorize_reader <- function(read_fn, file_path_to = NULL) {
   function(files, ...) {
-    df_list <- purrr::map(stats::setNames(nm = files), read_fn, ...)
+    df_list <- purrr::map(rlang::set_names(nm = files), read_fn, ...)
 
     if (is.null(file_path_to)) file_path_to <- rlang::zap()
     purrr::list_rbind(df_list, names_to = file_path_to)

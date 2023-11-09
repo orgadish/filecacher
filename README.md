@@ -19,11 +19,20 @@ See examples below.
 
 ## Installation
 
-You can install the development version of `filecacher` like so:
+You can install the released version of `filecacher` from
+[CRAN](https://cran.r-project.org/package=filecacher) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("orgadish/filecacher")
+install.packages("filecacher")
+```
+
+And the development version from
+[GitHub](https://github.com/orgadish/filecacher):
+
+``` r
+if(!requireNamespace("remotes")) install.packages("remotes")
+
+remotes::install_github("orgadish/filecacher")
 ```
 
 ## Example
@@ -99,27 +108,27 @@ time_pipeline <- function(pipeline_fn) {
 time_pipeline(normal_pipeline)
 #> [1] "normal_pipeline"
 #>    user  system elapsed 
-#>   0.046   0.008   0.567 
+#>   0.048   0.009   0.570 
 #>    user  system elapsed 
-#>   0.003   0.001   0.505 
+#>   0.003   0.000   0.504 
 #>    user  system elapsed 
-#>   0.003   0.000   0.504
+#>   0.003   0.001   0.503
 time_pipeline(pipeline_using_cached_read)
 #> [1] "pipeline_using_cached_read"
 #>    user  system elapsed 
-#>   0.564   0.047   1.150 
+#>   0.553   0.049   1.146 
 #>    user  system elapsed 
-#>   0.026   0.002   0.027 
+#>   0.027   0.002   0.028 
 #>    user  system elapsed 
-#>   0.009   0.002   0.010
+#>   0.009   0.001   0.009
 time_pipeline(pipeline_using_with_cache)
 #> [1] "pipeline_using_with_cache"
 #>    user  system elapsed 
-#>   0.008   0.002   0.511 
+#>   0.008   0.002   0.510 
 #>    user  system elapsed 
-#>   0.005   0.001   0.005 
+#>   0.004   0.001   0.005 
 #>    user  system elapsed 
-#>   0.006   0.001   0.005
+#>   0.006   0.001   0.006
 
 
 # Delete the temporary directory created to run these examples.

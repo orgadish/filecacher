@@ -4,16 +4,18 @@
 # filecacher
 
 <!-- badges: start -->
+
+[![](https://cranlogs.r-pkg.org/badges/filecacher)](https://cran.r-project.org/package=filecacher)
 <!-- badges: end -->
 
 The main functions in this package are:
 
-1.  `with_cache`: Caches the expression in a local file on disk.
-2.  `cached_read`: A wrapper around a typical read function that caches
-    the result and the file list info. If the input file list info
-    hasn’t changed (including date modified), the cache file will be
-    read. This can save time if the original operation requires reading
-    from many files, or involves lots of processing.
+1.  `with_cache()`: Caches the expression in a local file on disk.
+2.  `cached_read()`: A wrapper around a typical read function that
+    caches the result and the file list info. If the input file list
+    info hasn’t changed (including date modified), the cache file will
+    be read. This can save time if the original operation requires
+    reading from many files, or involves lots of processing.
 
 See examples below.
 
@@ -108,27 +110,27 @@ time_pipeline <- function(pipeline_fn) {
 time_pipeline(normal_pipeline)
 #> [1] "normal_pipeline"
 #>    user  system elapsed 
-#>   0.048   0.009   0.570 
+#>   0.042   0.005   0.549 
 #>    user  system elapsed 
-#>   0.003   0.000   0.504 
+#>   0.002   0.001   0.502 
 #>    user  system elapsed 
-#>   0.003   0.001   0.503
+#>   0.002   0.000   0.503
 time_pipeline(pipeline_using_cached_read)
 #> [1] "pipeline_using_cached_read"
 #>    user  system elapsed 
-#>   0.553   0.049   1.146 
+#>   0.574   0.039   1.138 
 #>    user  system elapsed 
-#>   0.027   0.002   0.028 
+#>   0.028   0.003   0.029 
 #>    user  system elapsed 
-#>   0.009   0.001   0.009
+#>   0.013   0.001   0.015
 time_pipeline(pipeline_using_with_cache)
 #> [1] "pipeline_using_with_cache"
 #>    user  system elapsed 
-#>   0.008   0.002   0.510 
+#>   0.011   0.002   0.519 
 #>    user  system elapsed 
-#>   0.004   0.001   0.005 
+#>   0.009   0.002   0.009 
 #>    user  system elapsed 
-#>   0.006   0.001   0.006
+#>   0.008   0.001   0.009
 
 
 # Delete the temporary directory created to run these examples.

@@ -5,7 +5,7 @@ test_that("file_cache with cache=NULL", {
   .cache <- file_cache()
   expect_equal(
     fs::path_abs(.cache$info()$dir),
-    expected_dir
+    fs::path_abs(expected_dir)
   )
 
   if (!dir_already_exists) {

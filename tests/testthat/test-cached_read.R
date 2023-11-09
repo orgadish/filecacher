@@ -28,7 +28,7 @@ create_temp_cache_dir <- function() {
 # Helpers -----------------------------------------------------------------
 
 # Silent read_csv
-silent_read_csv <- function(...) suppressMessages(vectorized_reader(read.csv)(...))
+silent_read_csv <- function(...) suppressMessages(readr::read_csv(...))
 
 #' A read_fn that has an expectation of being called or not.
 #'

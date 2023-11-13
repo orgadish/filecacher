@@ -1,3 +1,7 @@
+# filecacher 0.2.5
+* Updated `test-cached_read.R` to use a temporary directory as created by
+  `tempfile()` to correct the error caught by the CRAN Package Check.
+
 # filecacher 0.2.4
 * Updated default behavior of `file_cache()`.
 

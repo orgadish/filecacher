@@ -11,16 +11,11 @@ IRIS_PATHS_BY_SPECIES <- c(
 IRIS_PATHS <- c(IRIS_COMPLETE_PATH, IRIS_PATHS_BY_SPECIES)
 
 # Temporary Cache Directory -----------------------------------------------
-temp_dirname <- paste("temp", Sys.time()) |>
-  fs::path_sanitize()
-TEMP_DIR <- fs::path(EXTDATA_FOLDER, temp_dirname)
-fs::dir_create(TEMP_DIR)
+tf <- tempfile()
+dir.create(tf)
 create_temp_cache_dir <- function() {
-  cache_dir_name <- paste("temp", Sys.time(), sample.int(1e3, 1), sep = "_") |>
-    fs::path_sanitize()
-  cache_dir_path <- fs::path(TEMP_DIR, cache_dir_name)
-  fs::dir_create(cache_dir_path)
-
+  cache_dir_path <- tempfile("cache", tmpdir = tf)
+  dir.create(cache_dir_path)
   return(cache_dir_path)
 }
 
@@ -106,7 +101,7 @@ test_that("cached_read default (with file_info check) works correctly", {
   }
 })
 
-expect_skip_file_info_works <- function(cache_ext, type = NULL, ...) {
+expect_skip_file_info_works <- function(cache_ext, type = NULL) {
   temp_cache_dir <- create_temp_cache_dir()
 
   iris_complete <- silent_read_csv(IRIS_COMPLETE_PATH)
@@ -121,7 +116,6 @@ expect_skip_file_info_works <- function(cache_ext, type = NULL, ...) {
       cache = temp_cache_dir,
       skip_file_info = TRUE,
       type = type,
-      ...
     ) |>
       # Ignore `file_path` which is added with type='csv'.
       dplyr::select(
@@ -148,7 +142,9 @@ test_that("cached_read with skip_file_info and type='parquet' works", {
 })
 
 test_that("cached_read with skip_file_info and type='csv' works correctly", {
-  expect_skip_file_info_works("cache_csv", type = "csv")
+  suppressMessages(
+    expect_skip_file_info_works("cache_csv", type = "csv")
+  )
 })
 
 
@@ -178,4 +174,4 @@ test_that("cached_read with file_info check forces if files are modified", {
 
 # Delete Temporary Directory ----------------------------------------------
 
-fs::dir_delete(TEMP_DIR)
+unlink(tf, recursive = TRUE)

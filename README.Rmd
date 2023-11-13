@@ -21,8 +21,9 @@ knitr::opts_chunk$set(
 
 The main functions in this package are:
 
-   1. `with_cache()`: Caches the expression in a local file on disk.
-   1. `cached_read()`: A wrapper around a typical read function that caches the result and the file list info. If the input file list info hasn't changed (including date modified), the cache file will be read. This can save time if the original operation requires reading from many files, or involves lots of processing.
+   1. `with_cache()`: Caches the expression in a local file on disk, using `cachem::cache_disk()` as its backend. This can be comfortably added to a piped sequence and it handles evaluating if the element doesn't already exist, or pulling from the cache if it does. 
+   
+   1. `cached_read()`: A wrapper around a typical read function that caches the result and the file list info using `cachem::cache_disk()`. If the input file list info hasn't changed (including date modified), the cache file will be read. This can save time if the original operation requires reading from many files, or involves lots of processing.
 
 
 See examples below.
@@ -70,7 +71,7 @@ something_that_takes_a_while <- function(x) {
 # Example standard pipeline without caching:
 #   1. Read using a vectorized `read.csv`.
 #   2. Perform some custom processing that takes a while (currently using sleep as an example).
-normal_pipeline <- function(files, ...) { # Use ... to silently take cache_dir below.
+normal_pipeline <- function(files, cache_dir=NULL) {
   files |>
     filecacher::vectorize_reader(read.csv)() |>
     suppressMessages() |>

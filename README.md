@@ -10,12 +10,17 @@
 
 The main functions in this package are:
 
-1.  `with_cache()`: Caches the expression in a local file on disk.
+1.  `with_cache()`: Caches the expression in a local file on disk, using
+    `cachem::cache_disk()` as its backend. This can be comfortably added
+    to a piped sequence and it handles evaluating if the element doesn’t
+    already exist, or pulling from the cache if it does.
+
 2.  `cached_read()`: A wrapper around a typical read function that
-    caches the result and the file list info. If the input file list
-    info hasn’t changed (including date modified), the cache file will
-    be read. This can save time if the original operation requires
-    reading from many files, or involves lots of processing.
+    caches the result and the file list info using
+    `cachem::cache_disk()`. If the input file list info hasn’t changed
+    (including date modified), the cache file will be read. This can
+    save time if the original operation requires reading from many
+    files, or involves lots of processing.
 
 See examples below.
 
@@ -65,7 +70,7 @@ something_that_takes_a_while <- function(x) {
 # Example standard pipeline without caching:
 #   1. Read using a vectorized `read.csv`.
 #   2. Perform some custom processing that takes a while (currently using sleep as an example).
-normal_pipeline <- function(files, ...) { # Use ... to silently take cache_dir below.
+normal_pipeline <- function(files, cache_dir=NULL) {
   files |>
     filecacher::vectorize_reader(read.csv)() |>
     suppressMessages() |>
@@ -113,27 +118,27 @@ time_pipeline <- function(pipeline_fn) {
 time_pipeline(normal_pipeline)
 #> [1] "normal_pipeline"
 #>    user  system elapsed 
-#>   0.034   0.005   0.546 
+#>   0.035   0.006   0.540 
 #>    user  system elapsed 
-#>   0.002   0.001   0.505 
+#>   0.002   0.000   0.507 
 #>    user  system elapsed 
-#>   0.002   0.000   0.503
+#>   0.003   0.000   0.504
 time_pipeline(pipeline_using_cached_read)
 #> [1] "pipeline_using_cached_read"
 #>    user  system elapsed 
-#>   0.493   0.041   1.064 
+#>   0.527   0.036   1.064 
 #>    user  system elapsed 
-#>   0.030   0.003   0.042 
+#>   0.029   0.002   0.030 
 #>    user  system elapsed 
-#>   0.013   0.001   0.014
+#>   0.013   0.001   0.013
 time_pipeline(pipeline_using_with_cache)
 #> [1] "pipeline_using_with_cache"
 #>    user  system elapsed 
-#>   0.010   0.002   0.515 
+#>   0.013   0.002   0.518 
 #>    user  system elapsed 
-#>   0.009   0.001   0.009 
+#>   0.010   0.001   0.011 
 #>    user  system elapsed 
-#>   0.009   0.001   0.009
+#>   0.009   0.001   0.010
 
 
 # Delete the temporary directory created to run these examples.

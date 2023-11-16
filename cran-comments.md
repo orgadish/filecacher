@@ -1,8 +1,20 @@
+# filecacher 0.2.6
+
+* Updated `test-cached_read.R` again to copy test data into a temporary directory
+  using `tempfile()` to correct the new error caught by the CRAN Package Check.
+  
+## ── R CMD check results ────────────────────── filecacher 0.2.6 ────
+Duration: 21.2s
+
+0 errors ✔ | 0 warnings ✔ | 0 notes ✔
+
 # filecacher 0.2.5
+
 * Updated `test-cached_read.R` to use a temporary directory as created by
   `tempfile()` to correct the error caught by the CRAN Package Check.
 
 # filecacher 0.2.4
+
 * Updated default behavior of `file_cache()`.
 
 ## ── R CMD check results ──────────────────────── filecacher 0.2.4 ────
@@ -12,6 +24,7 @@ Duration: 22.2s
 
 
 # filecacher 0.2.3
+
 CRAN Resubmission:
 * Updated LICENSE to use updated package name (filecacher)
   instead of old package name (cachedread).

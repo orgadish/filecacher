@@ -1,3 +1,9 @@
+# filecacher 0.2.7
+
+* Addressed issue with `test-cached_read.R` in `filecacher` 0.2.6 which had 
+  passed in local testing but failed on Windows system. The fix has now been
+  tested locally (on Mac) as well as on a Windows system.
+
 # filecacher 0.2.6
 
 * Updated `test-cached_read.R` again to copy test data into a temporary directory

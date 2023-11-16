@@ -14,7 +14,10 @@ copy_and_get_path <- function(file=NULL, glob=NULL) {
   fs::file_copy(path, new_path)
 
   # Ensure the new file can be written to.
-  fs::file_chmod(new_path, "rw-r--r--")
+  # Note: this fails if vector of paths is provided directly.
+  for (p in new_path) {
+    fs::file_chmod(p, 420)
+  }
 
   new_path
 }

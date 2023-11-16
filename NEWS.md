@@ -1,4 +1,4 @@
-# filecacher 0.2.6
+# filecacher 0.2.7
 
 * Another fix to `test-cached_read` to pass CRAN Package Check. 
   Copied test data to a temporary directory to perform tests there.

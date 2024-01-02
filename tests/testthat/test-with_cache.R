@@ -1,5 +1,5 @@
 test_that("with_cache works", {
-  tf <- tempfile()
+  tf <- withr::local_tempfile()
   dir.create(tf)
   cache <- cachem::cache_disk(tf)
 
@@ -19,6 +19,4 @@ test_that("with_cache works", {
   expect_equal(cache$get("test"), "CHANGED")
   expect_equal(run_with_cache(), "CHANGED")
   expect_equal(run_with_cache(force = TRUE), "TEST")
-
-  unlink(tf, recursive = TRUE)
 })

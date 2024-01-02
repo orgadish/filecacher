@@ -59,7 +59,7 @@ basename(iris_files_by_species)
 
 
 # Create a temporary directory to run these examples.
-tf <- tempfile()
+tf <- withr::local_tempfile()
 dir.create(tf)
 
 
@@ -119,8 +119,4 @@ time_pipeline <- function(pipeline_fn) {
 time_pipeline(normal_pipeline)
 time_pipeline(pipeline_using_cached_read)
 time_pipeline(pipeline_using_with_cache)
-
-
-# Delete the temporary directory created to run these examples.
-unlink(tf, recursive = TRUE)
 ```

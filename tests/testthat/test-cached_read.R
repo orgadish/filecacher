@@ -1,5 +1,5 @@
 # Temp Test Directory ------------------------------------------------------------------
-tf <- fs::dir_create(tempfile())
+tf <- fs::dir_create(withr::local_tempfile())
 
 # Copy Data to Temp Data Directory -----------------------------------------------------
 temp_data_folder <- fs::dir_create(tempfile("data", tmpdir = tf))
@@ -190,7 +190,3 @@ test_that("cached_read with file_info check forces if files are modified", {
     expect_cache_file(temp_cache_dir, TRUE)
   }
 })
-
-
-# Delete Temporary Directory ----------------------------------------------
-unlink(tf, recursive = TRUE)

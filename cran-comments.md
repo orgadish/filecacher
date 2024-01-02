@@ -3,8 +3,8 @@
 * Updated tests and examples to skip if arrow is not installed. R CMD check and
   passes locally with or without arrow installed.
 
-* Made minor update to `test-file_cache.R` to address failure on CRAN package
-  check on r-devel-windows-x86_64.
+* Updated `test-file_cache.R` to address failure on CRAN package check on 
+  r-devel-windows-x86_64.
 
 # filecacher 0.2.7
 

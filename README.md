@@ -58,7 +58,7 @@ basename(iris_files_by_species)
 
 
 # Create a temporary directory to run these examples.
-tf <- tempfile()
+tf <- withr::local_tempfile()
 dir.create(tf)
 
 
@@ -118,29 +118,25 @@ time_pipeline <- function(pipeline_fn) {
 time_pipeline(normal_pipeline)
 #> [1] "normal_pipeline"
 #>    user  system elapsed 
-#>   0.035   0.006   0.540 
+#>    0.03    0.02    0.55 
 #>    user  system elapsed 
-#>   0.002   0.000   0.507 
+#>    0.01    0.00    0.51 
 #>    user  system elapsed 
-#>   0.003   0.000   0.504
+#>     0.0     0.0     0.5
 time_pipeline(pipeline_using_cached_read)
 #> [1] "pipeline_using_cached_read"
 #>    user  system elapsed 
-#>   0.527   0.036   1.064 
+#>    0.28    0.09    0.89 
 #>    user  system elapsed 
-#>   0.029   0.002   0.030 
+#>    0.01    0.00    0.02 
 #>    user  system elapsed 
-#>   0.013   0.001   0.013
+#>    0.01    0.00    0.01
 time_pipeline(pipeline_using_with_cache)
 #> [1] "pipeline_using_with_cache"
 #>    user  system elapsed 
-#>   0.013   0.002   0.518 
+#>    0.01    0.02    0.53 
 #>    user  system elapsed 
-#>   0.010   0.001   0.011 
+#>       0       0       0 
 #>    user  system elapsed 
-#>   0.009   0.001   0.010
-
-
-# Delete the temporary directory created to run these examples.
-unlink(tf, recursive = TRUE)
+#>    0.01    0.00    0.02
 ```

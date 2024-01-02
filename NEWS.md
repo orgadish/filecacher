@@ -1,7 +1,6 @@
 # filecacher 0.2.8
 
-* Updates to pass CRAN package checks: Tests and examples now skip if arrow is
-  not installed.
+* Updates to pass CRAN package checks.
 
 
 # filecacher 0.2.7

@@ -1,4 +1,8 @@
 test_that("file_cache with cache=NULL", {
+
+  # Skip this test on CRAN since it involves editing the local file system.
+  skip_on_cran()
+
   expected_default_cache_dir <- fs::path_abs(here::here("cache"))
 
   # If the default directory already exists, skip this test to leave the

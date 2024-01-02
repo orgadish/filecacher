@@ -1,7 +1,14 @@
+# filecacher 0.2.8
+
+* Updates to pass CRAN package checks: Tests and examples now skip if arrow is
+  not installed.
+
+
 # filecacher 0.2.7
 
 * Another fix to `test-cached_read` to pass CRAN Package Check. 
   Copied test data to a temporary directory to perform tests there.
+
 
 # filecacher 0.2.5
 

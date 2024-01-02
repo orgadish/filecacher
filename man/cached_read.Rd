@@ -32,8 +32,8 @@ cached_read_csv(
 
 \item{read_fn}{A function which takes file(s) as its first parameter and
 reads them. To use a single-input read function such as
-\code{arrow::read_csv_arrow()} with multiple files, use \code{\link[=vectorize_reader]{vectorize_reader()}},
-e.g. \code{read_fn = vectorize_reader(arrow::read_csv_arrow)}.}
+\code{read.csv()} with multiple files, use \code{\link[=vectorize_reader]{vectorize_reader()}},
+e.g. \code{read_fn = vectorize_reader(read.csv)}.}
 
 \item{cache}{One of the following:
 \itemize{

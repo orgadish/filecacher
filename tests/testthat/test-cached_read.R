@@ -155,6 +155,8 @@ test_that("cached_read with skip_file_info and type='rds' works", {
 })
 
 test_that("cached_read with skip_file_info and type='parquet' works", {
+  skip_if_not_installed("arrow")
+
   expect_skip_file_info_works("cache_parquet", type = "parquet")
 })
 

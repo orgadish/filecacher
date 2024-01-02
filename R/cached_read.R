@@ -16,8 +16,8 @@
 #' @param files A file or files to read with `read_fn`.
 #' @param read_fn A function which takes file(s) as its first parameter and
 #'   reads them. To use a single-input read function such as
-#'   `arrow::read_csv_arrow()` with multiple files, use [vectorize_reader()],
-#'   e.g. `read_fn = vectorize_reader(arrow::read_csv_arrow)`.
+#'   `read.csv()` with multiple files, use [vectorize_reader()],
+#'   e.g. `read_fn = vectorize_reader(read.csv)`.
 #' @param skip_file_info Whether to skip saving and/or checking the file info.
 #'  Use this when just querying the file system (without opening files) is slow.
 #' @inheritParams with_cache

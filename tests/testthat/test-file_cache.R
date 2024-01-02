@@ -1,20 +1,21 @@
 test_that("file_cache with cache=NULL", {
-  expected_dir <- here::here("cache")
-  dir_already_exists <- fs::dir_exists(expected_dir)
+  expected_dir <- fs::path_abs(here::here("cache"))
+  dir_exists_before_test <- fs::dir_exists(expected_dir)
 
   .cache <- file_cache()
   expect_equal(
     fs::path_abs(.cache$info()$dir),
-    fs::path_abs(expected_dir)
+    expected_dir
   )
 
-  if (!dir_already_exists) {
-    expect_true(fs::dir_exists(expected_dir))
+  expect_true(fs::dir_exists(expected_dir))
+
+  if (!dir_exists_before_test) {
     .cache$destroy()
   }
 })
 
-test_that("file_cache with type=NULL works", {
+test_that("file_cache with type=NULL", {
   tf <- tempfile()
   dir.create(tf)
   cache <- file_cache(tf)
@@ -27,7 +28,7 @@ test_that("file_cache with type=NULL works", {
   unlink(tf, recursive = TRUE)
 })
 
-test_that("file_cache with type=rds works", {
+test_that("file_cache with type=rds", {
   tf <- tempfile()
   dir.create(tf)
   cache <- file_cache(tf, type = "rds")
@@ -40,7 +41,9 @@ test_that("file_cache with type=rds works", {
   unlink(tf, recursive = TRUE)
 })
 
-test_that("file_cache with type=parquet works", {
+test_that("file_cache with type=parquet", {
+  skip_if_not_installed("arrow")
+
   tf <- tempfile()
   dir.create(tf)
   cache <- file_cache(tf, type = "parquet")
@@ -53,7 +56,7 @@ test_that("file_cache with type=parquet works", {
   unlink(tf, recursive = TRUE)
 })
 
-test_that("file_cache with type=csv, ext_prefix=NULL works", {
+test_that("file_cache with type=csv, ext_prefix=NULL", {
   tf <- tempfile()
   dir.create(tf)
   cache <- file_cache(tf, type = "csv", ext_prefix = "")

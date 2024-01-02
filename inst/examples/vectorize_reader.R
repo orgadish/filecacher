@@ -14,20 +14,24 @@ vectorize_reader(read.csv)(
 ) |>
   all.equal(iris)
 
-try(arrow::read_csv_arrow(iris_files))
-vectorize_reader(arrow::read_csv_arrow)(
-  iris_files
-) |>
-  as.data.frame() |>
-  all.equal(iris_chr)
+
+if (rlang::is_installed("arrow")) {
+  try(arrow::read_csv_arrow(iris_files))
+  vectorize_reader(arrow::read_csv_arrow)(
+    iris_files
+  ) |>
+    as.data.frame() |>
+    all.equal(iris_chr)
+}
 
 
-
-try(data.table::fread(iris_files))
-vectorize_reader(data.table::fread)(
-  iris_files,
-  stringsAsFactors = TRUE
-) |>
-  as.data.frame() |>
-  all.equal(iris)
+if (rlang::is_installed("data.table")) {
+  try(data.table::fread(iris_files))
+  vectorize_reader(data.table::fread)(
+    iris_files,
+    stringsAsFactors = TRUE
+  ) |>
+    as.data.frame() |>
+    all.equal(iris)
+}
 

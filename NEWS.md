@@ -3,6 +3,8 @@
 * Removed dependencies on `fs`, `dplyr`, `readr` in tests to pass CRAN package 
   checks.
   
+* Fixed bug in `file_cache()` when suggested packages were not available.
+  
 * Made explicit the dependency R (>= 4.1.0) due to use of new pipe `|>` in 
   tests and examples.
 

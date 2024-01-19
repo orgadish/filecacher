@@ -1,6 +1,7 @@
 # filecacher 0.2.9
 
 * Removed test dependencies on `fs` and `dplyr` to pass CRAN package checks.
+* Fixed bug in `file_cache()` when suggested packages were not available.
 
 # filecacher 0.2.8
 

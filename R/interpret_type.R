@@ -36,8 +36,7 @@ get_csv_fns <- function(type = NULL) {
   )
 
   if (is.null(type)) {
-    installed_fns <- rw_fns[!is.null(rw_fns)]
-    fn_list <- installed_fns[[1]]
+    fn_list <- purrr::detect(installed_fns, \(x) !is.null(x))
   } else if (type %in% names(rw_fns)) {
     fn_list <- rw_fns[[type]]
   } else {

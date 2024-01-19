@@ -31,7 +31,7 @@ get_csv_fns <- function(type = NULL) {
     },
     "base" = list(
       read = vectorize_reader(utils::read.csv, "file_path"),
-      write = utils::write.csv
+      write = \(x, f) utils::write.csv(x, f, row.names = FALSE)
     )
   )
 

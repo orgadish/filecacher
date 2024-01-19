@@ -40,17 +40,19 @@ create_temp_cache_dir <- function() {
 
 # Helpers -----------------------------------------------------------------
 
-vectorized_read_csv <- function(...) {
-  vectorize_reader(read.csv)(...)
+vectorized_read_csv <- function(files, ...) {
+  out <- suppressMessages(get_csv_read_fn()(files, ...))
+  out$file_path <- NULL
+  out
 }
 
 #' A read_fn that has an expectation of being called or not.
 #'
 #' @param expected Whether to expect call or not.
 read_csv_with_expectation <- function(expected) {
-  function(...) {
+  function(files, ...) {
     expect(expected, "Original `read_fn` was called when not expected...")
-    vectorized_read_csv(...)
+    vectorized_read_csv(files, ...)
   }
 }
 
@@ -77,6 +79,14 @@ expect_cache_file_info <- function(dir_path, exists, ext = CACHE_EXT) {
 
 # Expect Equal DFs
 expect_equal_dfs <- function(x, y) {
+  if (!is.data.frame(x) || !is.data.frame(y)) {
+    stop("`expect_equal_dfs` can only be used on data frames!")
+  }
+
+  # Ignore the file_path.
+  x$file_path <- NULL
+  y$file_path <- NULL
+
   xn <- names(x)
   yn <- names(y)
 
@@ -138,10 +148,6 @@ expect_skip_file_info_works <- function(cache_ext, type = NULL) {
       skip_file_info = TRUE,
       type = type,
     )
-
-    if ("file_path" %in% names(res)) {
-      res$file_path <- NULL
-    }
 
     expect_equal_dfs(res, iris_complete)
 

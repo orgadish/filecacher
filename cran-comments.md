@@ -1,7 +1,9 @@
 # filecacher 0.2.9
 
-* Removed test dependencies on `fs` and `dplyr` to pass CRAN package checks.
-* Fixed bug in `file_cache()` when suggested packages were not available.
+* Removed test dependencies on suggested packages `dplyr` and `readr` and
+  confirmed that R CMD CHECK passes with no suggested packages installed.
+
+* Fixed bugs in `file_cache()` when suggested packages were not available.
 
 # filecacher 0.2.8
 

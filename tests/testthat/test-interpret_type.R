@@ -48,15 +48,12 @@ test_that("interpret_cache_type read/write works", {
   skip_if_not_installed("arrow")
   expect_fns_equal(interpret_cache_type("parquet")$read, arrow::read_parquet)
   expect_fns_equal(interpret_cache_type("parquet")$write, arrow::write_parquet)
-
 })
 
 test_that("interpret_cache_type with parquet requires arrow", {
-  if(rlang::is_installed("arrow")) {
+  if (rlang::is_installed("arrow")) {
     expect_no_error(interpret_cache_type("parquet"))
-  }
-  else {
+  } else {
     expect_error(interpret_cache_type("parquet"))
   }
-
 })

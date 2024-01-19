@@ -62,7 +62,6 @@ if (rlang::is_installed("data.table")) {
     as.data.frame() |>
     all.equal(iris)
 }
-
 }
 \seealso{
 \code{\link[purrr:list_c]{purrr::list_rbind()}}

@@ -34,4 +34,3 @@ if (rlang::is_installed("data.table")) {
     as.data.frame() |>
     all.equal(iris)
 }
-

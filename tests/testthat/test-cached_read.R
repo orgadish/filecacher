@@ -1,29 +1,32 @@
-# Temp Test Directory ------------------------------------------------------------------
-tf <- fs::dir_create(withr::local_tempfile())
+# Temp Test Directory ---------------------------------------------------------
+tf <- withr::local_tempfile()
+dir.create(tf)
 
-# Copy Data to Temp Data Directory -----------------------------------------------------
-temp_data_folder <- fs::dir_create(tempfile("data", tmpdir = tf))
+# Copy Data to Temp Data Directory --------------------------------------------
+temp_data_folder <- tempfile("data", tmpdir = tf)
+dir.create(temp_data_folder)
 
-copy_and_get_path <- function(file=NULL, glob=NULL) {
-  extdata_path <- fs::path_package("filecacher", "extdata")
-  if(!is.null(file)) path <- fs::path(extdata_path, file)
-  else if(!is.null(glob)) path <- fs::dir_ls(extdata_path, glob=glob)
-  else stop("Must use either file or glob!")
+copy_and_get_path <- function(file = NULL, glob = NULL) {
+  extdata_path <- system.file("extdata", package = "filecacher")
+  if (!is.null(file)) {
+    path <- file.path(extdata_path, file)
+  } else if (!is.null(glob)) {
+    path <- fs_dir_ls_(extdata_path, glob)
+  } else {
+    stop("Must use either file or glob!")
+  }
 
-  new_path <- fs::path(temp_data_folder, fs::path_file(path))
-  fs::file_copy(path, new_path)
+  new_path <- file.path(temp_data_folder, basename(path))
+  file.copy(path, new_path)
 
   # Ensure the new file can be written to.
-  # Note: this fails if vector of paths is provided directly.
-  for (p in new_path) {
-    fs::file_chmod(p, 420)
-  }
+  Sys.chmod(new_path, 420)
 
   new_path
 }
 
 IRIS_COMPLETE_PATH <- copy_and_get_path("iris_complete.csv")
-IRIS_PATHS_BY_SPECIES <- copy_and_get_path(glob="*only.csv")
+IRIS_PATHS_BY_SPECIES <- copy_and_get_path(glob = "*only.csv")
 
 
 # Temporary Cache Directory -----------------------------------------------
@@ -37,8 +40,9 @@ create_temp_cache_dir <- function() {
 
 # Helpers -----------------------------------------------------------------
 
-# Silent read_csv
-silent_read_csv <- function(...) suppressMessages(readr::read_csv(...))
+vectorized_read_csv <- function(...) {
+  vectorize_reader(read.csv)(...)
+}
 
 #' A read_fn that has an expectation of being called or not.
 #'
@@ -46,7 +50,7 @@ silent_read_csv <- function(...) suppressMessages(readr::read_csv(...))
 read_csv_with_expectation <- function(expected) {
   function(...) {
     expect(expected, "Original `read_fn` was called when not expected...")
-    silent_read_csv(...)
+    vectorized_read_csv(...)
   }
 }
 
@@ -58,8 +62,8 @@ to_file_info_label <- function(label) paste0(label, "-file_info")
 expect_cache_file <- function(dir_path, exists,
                               ext = CACHE_EXT, file_info = FALSE) {
   label <- if (file_info) to_file_info_label(CACHE_LABEL) else CACHE_LABEL
-  expected_cache_file_path <- fs::path(dir_path, label, ext = ext)
-  cache_file_exists <- fs::file_exists(expected_cache_file_path)
+  expected_cache_file_path <- file.path(dir_path, paste0(label, ".", ext))
+  cache_file_exists <- file.exists(expected_cache_file_path)
 
   if (exists) {
     expect_true(cache_file_exists)
@@ -85,20 +89,20 @@ expect_equal_dfs <- function(x, y) {
 
 test_that("test data is set up correctly", {
   all_iris_paths <- c(IRIS_COMPLETE_PATH, IRIS_PATHS_BY_SPECIES)
-  for (path in all_iris_paths) expect_true(fs::file_exists(path))
+  for (path in all_iris_paths) expect_true(file.exists(path))
 
-  expect_true(is.data.frame(silent_read_csv(all_iris_paths)))
+  expect_true(is.data.frame(vectorized_read_csv(all_iris_paths)))
 
   # Confirm they match when combined.
-  iris_complete <- silent_read_csv(IRIS_COMPLETE_PATH)
-  iris_complete_by_subpaths <- silent_read_csv(IRIS_PATHS_BY_SPECIES)
+  iris_complete <- vectorized_read_csv(IRIS_COMPLETE_PATH)
+  iris_complete_by_subpaths <- vectorized_read_csv(IRIS_PATHS_BY_SPECIES)
   expect_equal_dfs(iris_complete, iris_complete_by_subpaths)
 })
 
 test_that("cached_read default (with file_info check) works correctly", {
   temp_cache_dir <- create_temp_cache_dir()
 
-  iris_complete <- silent_read_csv(IRIS_COMPLETE_PATH)
+  iris_complete <- vectorized_read_csv(IRIS_COMPLETE_PATH)
 
   expect_cache_file(temp_cache_dir, FALSE, ext = CACHE_EXT)
   expect_cache_file_info(temp_cache_dir, FALSE, ext = CACHE_EXT)
@@ -120,7 +124,7 @@ test_that("cached_read default (with file_info check) works correctly", {
 expect_skip_file_info_works <- function(cache_ext, type = NULL) {
   temp_cache_dir <- create_temp_cache_dir()
 
-  iris_complete <- silent_read_csv(IRIS_COMPLETE_PATH)
+  iris_complete <- vectorized_read_csv(IRIS_COMPLETE_PATH)
 
   expect_cache_file(temp_cache_dir, FALSE, ext = cache_ext)
   expect_cache_file_info(temp_cache_dir, FALSE, ext = cache_ext)
@@ -133,11 +137,11 @@ expect_skip_file_info_works <- function(cache_ext, type = NULL) {
       cache = temp_cache_dir,
       skip_file_info = TRUE,
       type = type,
-    ) |>
-      # Ignore `file_path` which is added with type='csv'.
-      dplyr::select(
-        -dplyr::matches("file_path")
-      )
+    )
+
+    if ("file_path" %in% names(res)) {
+      res$file_path <- NULL
+    }
 
     expect_equal_dfs(res, iris_complete)
 
@@ -170,7 +174,7 @@ test_that("cached_read with skip_file_info and type='csv' works correctly", {
 test_that("cached_read with file_info check forces if files are modified", {
   temp_cache_dir <- create_temp_cache_dir()
 
-  iris_complete <- silent_read_csv(IRIS_COMPLETE_PATH)
+  iris_complete <- vectorized_read_csv(IRIS_COMPLETE_PATH)
 
   expect_cache_file(temp_cache_dir, FALSE)
   for (i in 1:3) {
@@ -185,7 +189,7 @@ test_that("cached_read with file_info check forces if files are modified", {
     )
 
     # Update file last modified time to force new reading.
-    fs::file_touch(IRIS_PATHS_BY_SPECIES)
+    fs_file_touch_(IRIS_PATHS_BY_SPECIES)
 
     expect_cache_file(temp_cache_dir, TRUE)
   }

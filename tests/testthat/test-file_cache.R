@@ -1,28 +1,27 @@
 test_that("file_cache with cache=NULL", {
-
   # Skip this test on CRAN since it involves editing the local file system.
   skip_on_cran()
 
-  expected_default_cache_dir <- fs::path_abs(here::here("cache"))
+  expected_default_cache_dir <- here::here("cache")
 
   # If the default directory already exists, skip this test to leave the
   # directory untouched.
-  skip_if(fs::dir_exists(expected_default_cache_dir))
+  skip_if(dir.exists(expected_default_cache_dir))
 
   # Ensure the directory is deleted at the end.
   withr::defer(
-    unlink(expected_default_cache_dir, recursive=TRUE),
+    unlink(expected_default_cache_dir, recursive = TRUE),
     teardown_env()
   )
 
   .cache <- file_cache()
   expect_equal(
-    fs::path_abs(.cache$info()$dir),
-    expected_default_cache_dir
+    normalizePath(.cache$info()$dir),
+    normalizePath(expected_default_cache_dir)
   )
 
   # Ensure the directory was created
-  expect_true(fs::dir_exists(expected_default_cache_dir))
+  expect_true(dir.exists(expected_default_cache_dir))
 })
 
 test_that("file_cache with type=NULL", {
@@ -33,7 +32,7 @@ test_that("file_cache with type=NULL", {
   expect_true(inherits(cache, "cache_disk"))
 
   cache$set("test", 3)
-  expect_true(fs::is_file(fs::path(tf, "test.cache_rds")))
+  expect_true(fs_is_file_(file.path(tf, "test.cache_rds")))
 })
 
 test_that("file_cache with type=rds", {
@@ -44,7 +43,7 @@ test_that("file_cache with type=rds", {
   expect_true(inherits(cache, "cache_disk"))
 
   cache$set("test", 3)
-  expect_true(fs::is_file(fs::path(tf, "test.cache_rds")))
+  expect_true(fs_is_file_(file.path(tf, "test.cache_rds")))
 })
 
 test_that("file_cache with type=parquet", {
@@ -57,7 +56,7 @@ test_that("file_cache with type=parquet", {
   expect_true(inherits(cache, "cache_disk"))
 
   cache$set("test", data.frame(x = 1:3))
-  expect_true(fs::is_file(fs::path(tf, "test.cache_parquet")))
+  expect_true(fs_is_file_(file.path(tf, "test.cache_parquet")))
 })
 
 test_that("file_cache with type=csv, ext_prefix=NULL", {
@@ -68,7 +67,7 @@ test_that("file_cache with type=csv, ext_prefix=NULL", {
   expect_true(inherits(cache, "cache_disk"))
 
   cache$set("test", data.frame(x = 1:3))
-  expect_true(fs::is_file(fs::path(tf, "test.csv")))
+  expect_true(fs_is_file_(file.path(tf, "test.csv")))
 })
 
 test_that("file_cache passes existing cache object", {

@@ -1,3 +1,7 @@
+# filecacher 0.2.9
+
+* Removed test dependencies on `fs` and `dplyr` to pass CRAN package checks.
+
 # filecacher 0.2.8
 
 * Updated tests and examples to skip if arrow is not installed. R CMD check and

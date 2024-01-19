@@ -1,3 +1,11 @@
+# filecacher 0.2.9
+
+* Removed dependencies on `fs`, `dplyr`, `readr` in tests to pass CRAN package 
+  checks.
+  
+* Made explicit the dependency R (>= 4.1.0) due to use of new pipe `|>` in 
+  tests and examples.
+
 # filecacher 0.2.8
 
 * Updates to pass CRAN package checks.

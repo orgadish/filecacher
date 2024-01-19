@@ -1,7 +1,7 @@
 Package: filecacher
 Type: Package
 Title: File Cacher
-Version: 0.2.8
+Version: 0.2.9
 Authors@R:
     person("Or", "Gadish", email = "orgadish@gmail.com", role = c("aut", "cre", "cph"))
 Description: 
@@ -15,19 +15,20 @@ Description:
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Depends:
+    R (>= 4.1.0)
 Imports: 
     cachem,
     glue,
     here,
     purrr,
     rlang,
+    utils,
     vctrs
 RoxygenNote: 7.2.3
 Suggests: 
     arrow,
     data.table,
-    dplyr,
-    fs,
     readr,
     testthat (>= 3.0.0),
     withr

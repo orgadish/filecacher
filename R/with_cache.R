@@ -37,8 +37,10 @@ with_cache <- function(x, label, cache = NULL, type = NULL, force = FALSE) {
   tryCatch(
     .cache$set(label, out),
     error = \(e) {
-      stop(glue::glue(
-        "{e} Check if the cache type ('{type}') is compatible ",
+      # Warn only so that the result is still returned if caching fails.
+      warning(glue::glue(
+        "Failed to cache {label}: {e}\\n",
+        "Check if the cache type ('{type}') is compatible ",
         "with the data being stored."
       ))
     }
